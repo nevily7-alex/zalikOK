@@ -1,0 +1,18 @@
+import { chromium } from '@playwright/test';
+const b = await chromium.launch({ channel: 'chrome' });
+const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
+const errs = [];
+p.on('pageerror', (e) => errs.push(String(e)));
+p.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+await p.setExtraHTTPHeaders({'x-forwarded-for':'10.9.9.9'}); await p.goto('http://localhost:3100/admin');
+console.log('anon ->', p.url());
+await p.fill('#email', process.env.E2E_MANAGER_EMAIL);
+await p.fill('#password', process.env.E2E_MANAGER_PASSWORD);
+await p.click('button[type=submit]');
+await p.waitForURL('**/admin', { timeout: 15000 });
+await p.screenshot({ path: 'screenshots/admin-list.png' });
+await p.click('table a');
+await p.waitForSelector('h1');
+await p.screenshot({ path: 'screenshots/admin-detail.png', fullPage: true });
+console.log(p.url(), errs);
+await b.close();

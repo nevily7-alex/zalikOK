@@ -1,0 +1,61 @@
+{
+  "currency": "грн",
+  "note": "Ціни вказано «від» і є орієнтиром. Остаточну вартість менеджер погоджує після перегляду вимог. Роботу готуємо разом із вами.",
+  "groups": [
+    {
+      "id": "study",
+      "title": "Навчальні роботи",
+      "items": [
+        { "id": "kursova", "title": "Курсова робота", "from": 1000 },
+        { "id": "dyplomna", "title": "Дипломна робота", "from": 4000 },
+        { "id": "magisterska", "title": "Магістерська робота", "from": 6000 },
+        { "id": "referat", "title": "Реферат", "from": 400 },
+        { "id": "kontrolna", "title": "Контрольна робота", "from": 300 },
+        { "id": "zvit-praktyka", "title": "Звіт з практики", "from": 800 },
+        { "id": "praktychna", "title": "Практична робота", "from": 500 },
+        { "id": "laboratorna", "title": "Лабораторна робота", "from": 200 },
+        { "id": "domashnie", "title": "Домашнє завдання", "from": 200 },
+        { "id": "zadachi", "title": "Розв’язання задач", "from": 100 },
+        { "id": "dopovid", "title": "Доповідь", "from": 300 },
+        { "id": "vidpovidi", "title": "Відповіді на запитання", "from": 200 },
+        { "id": "anotatsiya", "title": "Анотація", "from": 200 },
+        { "id": "tvorcha", "title": "Творча робота", "from": 150 },
+        { "id": "tezy", "title": "Тези", "from": 150 },
+        { "id": "avtoreferat", "title": "Автореферат", "from": 500 }
+      ]
+    },
+    {
+      "id": "science",
+      "title": "Наукові роботи",
+      "items": [
+        { "id": "stattya", "title": "Стаття", "from": 400 },
+        { "id": "dysertatsiya", "title": "Дисертація", "from": 50000 },
+        { "id": "dopratsyuvannya-dysertatsii", "title": "Доопрацювання дисертації", "from": 9900 }
+      ]
+    },
+    {
+      "id": "texts",
+      "title": "Тексти й мови",
+      "items": [
+        { "id": "ese", "title": "Есе", "from": 350 },
+        { "id": "motyvatsiynyi-lyst", "title": "Мотиваційний лист", "from": 300 },
+        { "id": "kopirayting", "title": "Копірайтинг", "from": 150 },
+        { "id": "rerayting", "title": "Рерайтинг", "from": 150 },
+        { "id": "retsenziya", "title": "Рецензія", "from": 200 },
+        { "id": "pereklad", "title": "Переклад", "from": 300 },
+        { "id": "perevirka-tekstu", "title": "Перевірка тексту", "from": 150 }
+      ]
+    },
+    {
+      "id": "support",
+      "title": "Доопрацювання та супровід",
+      "items": [
+        { "id": "dopratsyuvannya-dyplomnoi", "title": "Доопрацювання дипломної роботи", "from": 900 },
+        { "id": "dopratsyuvannya-kursovoi", "title": "Доопрацювання курсової роботи", "from": 450 },
+        { "id": "prezentatsiya", "title": "Презентація", "from": 200 },
+        { "id": "kreslennya", "title": "Креслення", "from": 300 },
+        { "id": "biznes-plan", "title": "Бізнес-план", "from": 1000 }
+      ]
+    }
+  ]
+}

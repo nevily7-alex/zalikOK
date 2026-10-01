@@ -1,0 +1,82 @@
+{
+  "_comment": "Стартові налаштування калькулятора (UAH). Не опублікований прайс: власник має перевірити за вартістю роботи виконавців. Ключ id збігається з content/prices.json. Поля normalDays/baseChars для текстових послуг у знаках — припущення, їх треба підтвердити.",
+  "rounding": 50,
+  "complexity": [
+    { "id": "basic", "label": "Базовий: надані матеріали, проста структура", "mult": 1.0 },
+    { "id": "analytic", "label": "Аналітичний: порівняння джерел, аналіз готових даних", "mult": 1.2 },
+    { "id": "calc", "label": "Розрахунковий: формули, статистика, фінансова модель", "mult": 1.4 },
+    { "id": "tech", "label": "Технічний: код, моделювання, CAD, спеціальне ПЗ", "mult": 1.6 },
+    { "id": "custom", "label": "Нестандартний: нове дослідження, складна методологія", "manual": true }
+  ],
+  "urgency": [
+    { "minRatio": 1, "mult": 1.0 },
+    { "minRatio": 0.75, "mult": 1.15 },
+    { "minRatio": 0.5, "mult": 1.3 },
+    { "minRatio": 0.25, "mult": 1.5 }
+  ],
+  "quality": [
+    { "id": "good", "label": "Читабельний файл або текст", "mult": 1.0 },
+    { "id": "scan", "label": "Скан або фото середньої якості", "mult": 1.2 },
+    { "id": "poor", "label": "Складний для читання скан/фото", "mult": 1.5 },
+    { "id": "unreadable", "label": "Нечитабельні матеріали", "manual": true }
+  ],
+  "tariffs": {
+    "kursova": { "kind": "pages", "unit": "сторінок", "base": 1200, "baseQty": 25, "extra": 50, "normalDays": 10 },
+    "dyplomna": { "kind": "pages", "unit": "сторінок", "base": 4500, "baseQty": 50, "extra": 90, "normalDays": 30 },
+    "magisterska": { "kind": "pages", "unit": "сторінок", "base": 7000, "baseQty": 70, "extra": 110, "normalDays": 45 },
+    "referat": { "kind": "pages", "unit": "сторінок", "base": 400, "baseQty": 10, "extra": 40, "normalDays": 5 },
+    "stattya": { "kind": "pages", "unit": "сторінок", "base": 700, "baseQty": 5, "extra": 140, "normalDays": 7 },
+    "ese": { "kind": "pages", "unit": "сторінок", "base": 350, "baseQty": 3, "extra": 100, "normalDays": 3 },
+    "zvit-praktyka": { "kind": "pages", "unit": "сторінок", "base": 900, "baseQty": 20, "extra": 45, "normalDays": 7 },
+    "retsenziya": { "kind": "pages", "unit": "сторінок рецензії", "base": 300, "baseQty": 2, "extra": 120, "normalDays": 3, "source": { "label": "Обсяг матеріалу для рецензування, сторінок", "manualAbove": 60 } },
+    "biznes-plan": { "kind": "pages", "unit": "сторінок", "base": 1800, "baseQty": 15, "extra": 100, "normalDays": 10 },
+    "dopovid": { "kind": "pages", "unit": "сторінок", "base": 350, "baseQty": 3, "extra": 100, "normalDays": 3 },
+    "anotatsiya": { "kind": "pages", "unit": "сторінок анотації", "base": 200, "baseQty": 1, "extra": 150, "normalDays": 2, "source": { "label": "Обсяг вихідного тексту, сторінок", "manualAbove": 80 } },
+    "avtoreferat": { "kind": "pages", "unit": "сторінок", "base": 1000, "baseQty": 10, "extra": 100, "normalDays": 10, "source": { "label": "Обсяг дослідження, сторінок", "manualAbove": 300 } },
+    "tvorcha": { "kind": "pages", "unit": "сторінок", "base": 350, "baseQty": 3, "extra": 100, "normalDays": 4 },
+    "tezy": { "kind": "pages", "unit": "сторінок", "base": 300, "baseQty": 2, "extra": 150, "normalDays": 4 },
+    "motyvatsiynyi-lyst": { "kind": "pages", "unit": "сторінок", "base": 400, "baseQty": 1, "extra": 200, "normalDays": 3 },
+
+    "pereklad": { "kind": "chars", "min": 300, "rate": 180, "perChars": 1800, "baseChars": 18000, "normalDays": 2, "quality": true },
+    "kopirayting": { "kind": "chars", "min": 300, "rate": 150, "perChars": 1000, "baseChars": 10000, "normalDays": 3 },
+    "rerayting": { "kind": "chars", "min": 200, "rate": 80, "perChars": 1000, "baseChars": 10000, "normalDays": 2, "quality": true },
+    "perevirka-tekstu": { "kind": "chars", "min": 150, "rate": 30, "perChars": 1000, "baseChars": 10000, "normalDays": 2, "quality": true },
+
+    "kontrolna": { "kind": "units", "unit": "завдань", "base": 300, "baseQty": 3, "extra": 100, "normalDays": 3 },
+    "domashnie": { "kind": "units", "unit": "завдань", "base": 200, "baseQty": 2, "extra": 100, "normalDays": 3 },
+    "zadachi": { "kind": "units", "unit": "задач", "base": 100, "baseQty": 1, "extra": 100, "normalDays": 2 },
+    "laboratorna": { "kind": "units", "unit": "лабораторних", "base": 350, "baseQty": 1, "extra": 350, "normalDays": 4 },
+    "vidpovidi": { "kind": "units", "unit": "запитань", "base": 200, "baseQty": 5, "extra": 40, "normalDays": 3 },
+    "praktychna": { "kind": "units", "unit": "робіт", "base": 500, "baseQty": 1, "extra": 500, "normalDays": 5 },
+    "kreslennya": {
+      "kind": "units", "unit": "аркушів", "base": 500, "baseQty": 1, "extra": 500, "normalDays": 5, "noComplexity": true,
+      "variant": {
+        "label": "Формат аркуша",
+        "options": [
+          { "id": "a4", "label": "A4", "mult": 1.0 },
+          { "id": "a3", "label": "A3", "mult": 1.4 },
+          { "id": "a2", "label": "A2", "mult": 1.8 },
+          { "id": "a1", "label": "A1", "mult": 2.4 },
+          { "id": "a0", "label": "A0", "manual": true }
+        ]
+      }
+    },
+    "prezentatsiya": {
+      "kind": "units", "unit": "слайдів", "base": 500, "baseQty": 10, "extra": 50, "normalDays": 3, "noComplexity": true,
+      "variant": {
+        "label": "Підготовка матеріалу",
+        "options": [
+          { "id": "ready", "label": "Текст готовий", "mult": 1.0 },
+          { "id": "write", "label": "Потрібно скласти структуру й текст", "mult": 1.3 },
+          { "id": "infographics", "label": "Складна інфографіка", "mult": 1.5 }
+        ]
+      }
+    },
+
+    "dopratsyuvannya-kursovoi": { "kind": "revision", "min": 450, "proof": 20, "content": 60, "baseQty": 10, "normalDays": 3 },
+    "dopratsyuvannya-dyplomnoi": { "kind": "revision", "min": 900, "proof": 25, "content": 90, "baseQty": 20, "normalDays": 5 },
+
+    "dysertatsiya": { "kind": "manual", "reason": "Дисертацію оцінює менеджер за етапами: огляд, методологія, дослідження, обробка даних, оформлення." },
+    "dopratsyuvannya-dysertatsii": { "kind": "manual", "reason": "Доопрацювання дисертації оцінюється за зауваженнями, розділами та розрахунками." }
+  }
+}

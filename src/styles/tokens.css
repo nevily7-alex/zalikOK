@@ -1,0 +1,53 @@
+/* Токени дизайну ЗалікОк. Джерело значень: design/tokens.css пакета. Шрифти підключає next/font/local (src/app/fonts.ts). */
+:root {
+  --color-bg: #fffefa;
+  --color-text: #242424;
+  --color-primary: #ffd43b;
+  --color-primary-hover: #f2c626;
+  --color-soft-yellow: #fff4cc;
+  --color-neutral: #f7f5ef;
+  --color-muted: #64616b;
+  --color-border: #e8e4da;
+  --color-surface: #ffffff;
+  --color-error: #b42318;
+  --color-error-bg: #fef3f2;
+  --color-success: #176b46;
+  --color-success-bg: #ecf8f1;
+
+  --font-heading: var(--font-manrope), Manrope, system-ui, sans-serif;
+  --font-body: var(--font-nunito), 'Nunito Sans', system-ui, sans-serif;
+
+  --container: 1200px;
+  --gutter: 20px;
+  --header-h: 68px;
+  --radius-card: 24px;
+  --radius-input: 14px;
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --section-gap: 56px;
+  --shadow-form: 0 8px 28px rgb(36 36 36 / 0.06);
+  --transition: 180ms ease;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+    --header-h: 80px;
+    --section-gap: 88px;
+  }
+}

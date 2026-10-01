@@ -1,0 +1,10 @@
+@font-face{font-family:Manrope;src:url('../assets/fonts/Manrope-Variable.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:'Nunito Sans';src:url('../assets/fonts/NunitoSans-Variable.woff2') format('woff2');font-weight:200 900;font-style:normal;font-display:swap}
+:root{
+ --color-bg:#FFFEFA;--color-text:#242424;--color-primary:#FFD43B;--color-primary-hover:#F2C626;--color-soft-yellow:#FFF4CC;--color-neutral:#F7F5EF;--color-muted:#64616B;--color-border:#E8E4DA;--color-surface:#FFFFFF;--color-error:#B42318;--color-success:#176B46;
+ --font-heading:Manrope,system-ui,sans-serif;--font-body:'Nunito Sans',system-ui,sans-serif;
+ --container:1200px;--radius-card:24px;--radius-input:14px;--radius-pill:999px;
+ --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--space-8:64px;--space-9:96px;
+ --shadow-form:0 8px 28px rgb(36 36 36 / .06);--transition:180ms ease;
+}
+/* Paths relative to this file. For Next.js adapt URLs to /assets/fonts/. */

@@ -1,0 +1,14 @@
+{
+  "domain": null,
+  "telegramUrl": null,
+  "email": null,
+  "phone": null,
+  "operatorName": null,
+  "operatorRegistration": null,
+  "workingHours": null,
+  "responseTime": null,
+  "privacyPolicyVersion": "draft-1",
+  "legalStatus": "review_required",
+  "analyticsEnabled": false,
+  "retentionDaysAfterClosure": 180
+}

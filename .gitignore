@@ -1,0 +1,17 @@
+node_modules
+.next
+.data
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+src/generated
+test-results
+playwright-report
+screenshots/tmp
+.env.e2e
+.env.backup
+.env.*.backup
+.data-*.log
+*.tmp.mjs
+.env.*.backup

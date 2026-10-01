@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RequestStatus {
+  new
+  reviewing
+  awaiting_details
+  quoted
+  in_progress
+  delivered
+  closed
+  cancelled
+}
+
+enum ScanStatus {
+  pending
+  clean
+  rejected
+}
+
+enum UploadState {
+  slot
+  stored
+}
+
+enum OutboxStatus {
+  pending
+  sent
+  failed
+  skipped
+}
+
+model Request {
+  id                   String        @id @default(uuid()) @db.Uuid
+  publicReference      String        @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  service              String
+  workType             String?
+  discipline           String
+  disciplineOther      String?
+  topic                String
+  topicUnknown         Boolean       @default(false)
+  deadline             DateTime      @db.Date
+  pages                Int?
+  contactMethod        String
+  contact              String
+  comment              String        @default("")
+  status               RequestStatus @default(new)
+  estimatedPrice       Decimal?      @db.Decimal(10, 2)
+  managerNote          String?
+  assignedManagerId    String?
+  assignedManager      User?         @relation(fields: [assignedManagerId], references: [id], onDelete: SetNull)
+  privacyPolicyVersion String
+  consentAt            DateTime
+  idempotencyKeyHash   String?       @unique
+  bodyHash             String?
+  sourceUtm            Json?
+  closedAt             DateTime?
+
+  attachments Attachment[]
+  outbox      NotificationOutbox[]
+  audit       AuditLog[]
+
+  @@index([status, createdAt])
+  @@index([deadline])
+}
+
+model UploadSession {
+  id         String       @id @default(uuid()) @db.Uuid
+  secretHash String
+  createdAt  DateTime     @default(now())
+  expiresAt  DateTime
+  closedAt   DateTime?
+  attachments Attachment[]
+
+  @@index([expiresAt])
+}
+
+model Attachment {
+  id               String        @id @default(uuid()) @db.Uuid
+  requestId        String?       @db.Uuid
+  request          Request?      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sessionId        String        @db.Uuid
+  session          UploadSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  originalFilename String
+  storageKey       String        @unique
+  declaredKind     String
+  detectedMime     String?
+  sizeBytes        Int
+  state            UploadState   @default(slot)
+  scanStatus       ScanStatus    @default(pending)
+  createdAt        DateTime      @default(now())
+
+  @@index([sessionId])
+  @@index([requestId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?
+  requestId String?  @db.Uuid
+  request   Request? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  action    String
+  meta      Json?
+  timestamp DateTime @default(now())
+
+  @@index([requestId, timestamp])
+}
+
+model NotificationOutbox {
+  id                String       @id @default(uuid()) @db.Uuid
+  requestId         String       @db.Uuid
+  request           Request      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  channel           String
+  status            OutboxStatus @default(pending)
+  attempts          Int          @default(0)
+  nextAttemptAt     DateTime     @default(now())
+  lastError         String?
+  providerMessageId String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([status, nextAttemptAt])
+}
+
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+}
+
+model AuthRateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+}
+
+// ---- better-auth ----
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String?   @default("user")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+
+  sessions Session[]
+  accounts Account[]
+  requests Request[]
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  impersonatedBy String?
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
