@@ -23,9 +23,13 @@ test.describe('головна', () => {
     }
     const hrefs = await page.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')!));
     expect(hrefs.filter((h) => h === '#' || h === '' || h.startsWith('javascript:'))).toEqual([]);
-    // telegram не налаштовано → немає кнопки на чужий/вигаданий Telegram
-    expect(hrefs.filter((h) => /t\.me|telegram/i.test(h))).toEqual([]);
-    await expect(page.getByRole('link', { name: 'Залишити заявку', exact: true })).toBeVisible();
+    // Telegram власника налаштовано: лише його реальне посилання, відкривається в новій вкладці безпечно
+    const tg = hrefs.filter((h) => /t\.me|telegram/i.test(h));
+    expect(new Set(tg)).toEqual(new Set(['https://t.me/zalikOK_ua']));
+    const hero = page.getByRole('link', { name: 'Написати в Telegram' });
+    await expect(hero).toHaveAttribute('target', '_blank');
+    await expect(hero).toHaveAttribute('rel', /noopener/);
+    await expect(page.locator('footer a[href="mailto:zalikok.ua@gmail.com"]')).toBeVisible();
     // картки послуг ведуть на форму з передвибором
     await expect(page.locator('a[href="/zaiavka?service=editing"]')).toBeVisible();
   });
@@ -176,7 +180,7 @@ test.describe('SEO та службові сторінки', () => {
     for (const path of ['/privacy', '/umovy']) {
       await page.goto(path);
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-      await expect(page.getByText('review_required')).toBeVisible();
+      await expect(page.getByText('очікує юридичного перегляду')).toBeVisible();
       await expect(page.locator('h1')).toHaveCount(1);
     }
     await page.goto('/');

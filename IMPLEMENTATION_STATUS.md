@@ -99,3 +99,8 @@
 - Сповіщення після відповіді клієнту через `after()`; cron-ендпоінти `/api/cron/outbox` і `/api/cron/cleanup` (Bearer `CRON_SECRET`); логіка очищення винесена в `src/lib/server/cleanup.ts`.
 - Перевірка: Vitest 34/34, Playwright 69/69 (на локальній БД; нові тести cron і ліміту входу), lint/typecheck/build чисто. Міграцію застосовано на Supabase, `db:check-rls` ok.
 - Git: локальний репозиторій створено (гілка main). Публікація на GitHub потребує підтвердження власника: репозиторій публічний.
+
+## Доповнення: юридичні тексти власника — ✅
+- `content/legal/{terms,privacy}.md` рендеряться безпечним Markdown-рендерером (без HTML-ін'єкцій, лише https/mailto/tel); незаповнені поля виділено; сторінки під noindex і поза sitemap, поки є поля або `legalStatus=review_required`.
+- Контакти з текстів внесено в `site-config.json` (e-mail, Telegram): з'явилися кнопка «Написати в Telegram» і контакти у футері. Версія політики в заявках: `privacy-2026-10-02-v1`. FAQ про правки узгоджено з п.6 Умов (три безкоштовні звернення).
+- Playwright 73/73, Vitest 34/34.

@@ -920,3 +920,30 @@ body:has(dialog[open]) {
 .calc .field .optional {
   color: var(--color-muted);
 }
+
+/* ---------- Юридичні тексти ---------- */
+.legal h2 {
+  font-size: 22px;
+  line-height: 28px;
+  margin-top: 24px;
+}
+.legal-list {
+  padding-left: 22px;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.legal-list--ordered {
+  list-style: decimal;
+}
+.legal a {
+  text-underline-offset: 3px;
+}
+.legal-placeholder {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: var(--color-text);
+  font-weight: 700;
+}

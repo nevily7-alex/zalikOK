@@ -1,13 +1,13 @@
 {
   "domain": null,
-  "telegramUrl": null,
-  "email": null,
+  "telegramUrl": "https://t.me/zalikOK_ua",
+  "email": "zalikok.ua@gmail.com",
   "phone": null,
   "operatorName": null,
   "operatorRegistration": null,
   "workingHours": null,
   "responseTime": null,
-  "privacyPolicyVersion": "draft-1",
+  "privacyPolicyVersion": "privacy-2026-10-02-v1",
   "legalStatus": "review_required",
   "analyticsEnabled": false,
   "retentionDaysAfterClosure": 180
