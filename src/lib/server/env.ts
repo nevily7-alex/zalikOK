@@ -18,6 +18,13 @@ export function intEnv(name: string, fallback: number): number {
   return Number.isFinite(v) && v > 0 ? Math.floor(v) : fallback;
 }
 
+/**
+ * Публічна адреса застосунку: APP_URL, інакше системні змінні Vercel (production-аліас / адреса деплою), інакше localhost.
+ * Після підключення домену задайте APP_URL явно.
+ */
 export function appUrl(): string {
-  return (env('APP_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
+  const vercelProd = env('VERCEL_PROJECT_PRODUCTION_URL');
+  const vercel = env('VERCEL_ENV') === 'production' && vercelProd ? vercelProd : env('VERCEL_URL');
+  const base = env('APP_URL') ?? (vercel ? `https://${vercel}` : 'http://localhost:3000');
+  return base.replace(/\/$/, '');
 }

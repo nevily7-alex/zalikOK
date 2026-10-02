@@ -15,3 +15,5 @@ screenshots/tmp
 .data-*.log
 *.tmp.mjs
 .env.*.backup
+.vercel-env.txt
+.vercel

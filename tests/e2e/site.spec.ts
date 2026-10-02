@@ -171,8 +171,9 @@ test.describe('FAQ і приклади', () => {
 test.describe('SEO та службові сторінки', () => {
   test('robots, sitemap, noindex для службових сторінок', async ({ request, page }) => {
     const robots = await (await request.get('/robots.txt')).text();
-    expect(robots).toContain('Disallow: /admin');
-    expect(robots).toContain('Disallow: /diakuiemo');
+    // Домен не задано (тестовий стенд): індексація заборонена повністю
+    expect(robots).toMatch(/Disallow: \/\s/);
+    expect(robots).not.toContain('Sitemap');
     const sitemap = await (await request.get('/sitemap.xml')).text();
     expect(sitemap).not.toContain('/admin');
     expect(sitemap).not.toContain('/diakuiemo');
@@ -184,6 +185,7 @@ test.describe('SEO та службові сторінки', () => {
       await expect(page.locator('h1')).toHaveCount(1);
     }
     await page.goto('/');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
     // canonical лише після вказаного домену
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
     const ld = await page.locator('script[type="application/ld+json"]').innerText();

@@ -17,6 +17,8 @@ export function generateMetadata(): Metadata {
   const base = siteUrl() ?? (isProd ? null : appUrl());
   return {
     ...(base ? { metadataBase: new URL(base) } : {}),
+    // Без заданого домену (тестовий стенд) сторінки не індексуються
+    ...(siteUrl() ? {} : { robots: { index: false, follow: false } }),
     title: 'ЗалікОк — допомога з курсовими роботами',
     description: DESCRIPTION,
     alternates: canonicalFor('/'),

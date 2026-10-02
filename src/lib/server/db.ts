@@ -24,5 +24,18 @@ function create(): PrismaClient {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString, ssl }) });
 }
 
-export const prisma: PrismaClient = globalForPrisma.prisma ?? create();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+function client(): PrismaClient {
+  return (globalForPrisma.prisma ??= create());
+}
+
+/**
+ * Лінива ініціалізація: клієнт створюється при першому зверненні, а не при імпорті модуля.
+ * Завдяки цьому збірка (next build, у т.ч. preview-збірки Vercel) не вимагає DATABASE_URL.
+ */
+export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const c = client();
+    const value = Reflect.get(c, prop, c);
+    return typeof value === 'function' ? value.bind(c) : value;
+  },
+});

@@ -19,6 +19,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:generate": "prisma generate",
     "storage:check": "tsx --conditions=react-server scripts/check-storage.ts",
+    "vercel:env": "node scripts/vercel-env.mjs",
     "setup:telegram": "node scripts/setup-telegram.mjs",
     "setup:supabase": "node scripts/setup-supabase-env.mjs",
     "db:check-rls": "tsx --conditions=react-server scripts/check-rls.ts",

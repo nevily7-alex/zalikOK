@@ -7,6 +7,7 @@ import { OUTBOX_LABELS, SCAN_LABELS, STATUSES, STATUS_LABELS } from '@/lib/admin
 import { formatBytes } from '@/lib/upload-rules';
 import { CONTACT_LABELS, DISCIPLINE_LABELS, SERVICE_LABELS, type ContactMethod, type Discipline, type Service } from '@/lib/validation';
 import { findPrice } from '@/lib/prices';
+import { unscannedDownloadAllowed } from '@/lib/server/downloads';
 import { assignToMe, retryNotification, updateNote, updatePrice, updateStatus } from '../../actions';
 
 export default async function RequestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -123,6 +124,12 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
 
       <section aria-labelledby="a-title" className="admin-card">
         <h2 id="a-title">Вкладення ({r.attachments.length})</h2>
+        {unscannedDownloadAllowed() && r.attachments.some((a) => a.scanStatus === 'pending') && (
+          <p className="notice" role="note">
+            Автоматичної антивірусної перевірки немає: файли «не перевірено». Відкривайте їх лише після перевірки антивірусом
+            на вашому комп’ютері й не вмикайте макроси. Кожне таке завантаження записується в журнал.
+          </p>
+        )}
         {r.attachments.length === 0 ? (
           <p>Файлів немає.</p>
         ) : (
@@ -136,6 +143,10 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
                 {a.scanStatus === 'clean' ? (
                   <a href={`/api/admin/attachments/${a.id}`} className="btn btn-secondary btn-sm">
                     Завантажити
+                  </a>
+                ) : a.scanStatus === 'pending' && unscannedDownloadAllowed() ? (
+                  <a href={`/api/admin/attachments/${a.id}?unscanned=1`} className="btn btn-secondary btn-sm">
+                    Завантажити (не перевірено)
                   </a>
                 ) : (
                   <span className="field-hint">Завантаження заблоковано до перевірки</span>
