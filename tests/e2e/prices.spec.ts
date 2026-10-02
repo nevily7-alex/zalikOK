@@ -30,7 +30,7 @@ test.describe('прайс і калькулятор', () => {
     await page.goto('/ceny');
     const rows = page.locator('.price-row');
     await expect(rows).toHaveCount(31);
-    await expect(page.locator('.price-row', { hasText: 'Курсова робота' }).first()).toContainText('від 1 000 грн');
+    await expect(page.locator('.price-row', { hasText: 'Курсова робота' }).first()).toContainText('від 1 200 грн');
     await expect(page.locator('.price-row', { hasText: 'Дисертація' }).first()).toContainText('від 50 000 грн');
     const text = await page.locator('main').innerText();
     for (const banned of ['Підвищення унікальності', 'іспит', 'Тести']) expect(text).not.toContain(banned);

@@ -92,6 +92,15 @@ describe('калькулятор', () => {
     expect(r.status === 'ok' && r.normalDays).toBe(20);
   });
 
+  it('ціна «від» у прайсі дорівнює мінімуму калькулятора (прайс і калькулятор не розходяться)', () => {
+    for (const item of ALL_PRICE_ITEMS) {
+      const t = config.tariffs[item.id]!;
+      if (t.kind === 'manual') continue; // дисертації: оцінка менеджера, «від» лише орієнтир
+      const min = t.kind === 'chars' || t.kind === 'revision' ? t.min : t.base;
+      expect(item.from, item.title).toBe(min);
+    }
+  });
+
   it('кожна позиція прайсу має тариф, а виключених послуг немає', () => {
     for (const item of ALL_PRICE_ITEMS) expect(config.tariffs[item.id], item.id).toBeTruthy();
     for (const id of Object.keys(config.tariffs)) expect(ALL_PRICE_ITEMS.some((i) => i.id === id), id).toBe(true);
