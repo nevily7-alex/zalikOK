@@ -574,6 +574,7 @@ export function RequestWizard({ initial = {}, telegram = null }: { initial?: Wiz
 
   const showOther = values.discipline === 'other';
   const tariff = getTariff(values.workType);
+  const tariffNote = tariff && tariff.kind === 'pages' ? tariff.note : undefined;
 
   return (
     <div className="wizard-layout">
@@ -1080,6 +1081,7 @@ export function RequestWizard({ initial = {}, telegram = null }: { initial?: Wiz
             </>
           )}
           {estimate.status === 'incomplete' && <p className="field-hint">{estimate.reason}</p>}
+          {tariffNote && estimate.status !== 'incomplete' && <p className="field-hint">{tariffNote}</p>}
         </div>
         <p className="estimate__note">
           <Icon name="check-circle" />

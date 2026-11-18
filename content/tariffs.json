@@ -21,7 +21,7 @@
     { "id": "unreadable", "label": "Нечитабельні матеріали", "manual": true }
   ],
   "tariffs": {
-    "kursova": { "kind": "pages", "unit": "сторінок", "base": 1200, "baseQty": 25, "extra": 50, "normalDays": 10 },
+    "kursova": { "kind": "pages", "unit": "сторінок", "base": 1000, "baseQty": 25, "extra": 25, "normalDays": 10, "note": "Базова ціна — для теоретичної роботи на 25 сторінок; кожна наступна сторінка — 25 грн. Практична частина, розрахунки та складність теми можуть змінити вартість." },
     "dyplomna": { "kind": "pages", "unit": "сторінок", "base": 4500, "baseQty": 50, "extra": 90, "normalDays": 30 },
     "magisterska": { "kind": "pages", "unit": "сторінок", "base": 7000, "baseQty": 70, "extra": 110, "normalDays": 45 },
     "referat": { "kind": "pages", "unit": "сторінок", "base": 400, "baseQty": 10, "extra": 40, "normalDays": 5 },

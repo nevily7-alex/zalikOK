@@ -44,13 +44,13 @@ test.describe('сторінка заявки: майстер із трьох к�
 
     await pickOption(page.locator('#f-workType'), 'kursova');
     await expect(page.locator('#f-pages')).toHaveValue('25');
-    await expect(price).toHaveText('Орієнтовно 1 200 грн');
+    await expect(price).toHaveText('Орієнтовно 1 000 грн');
 
     const plus = page.getByRole('button', { name: 'Збільшити' });
     for (let i = 0; i < 10; i++) await plus.click();
     await expect(page.locator('#f-pages')).toHaveValue('35');
-    await expect(price).toHaveText('Орієнтовно 1 700 грн');
-    await expect(page.getByRole('complementary')).toContainText('Додатково 10 × 50 грн');
+    await expect(price).toHaveText('Орієнтовно 1 250 грн');
+    await expect(page.getByRole('complementary')).toContainText('Додатково 10 × 25 грн');
     await page.getByRole('button', { name: 'Зменшити' }).click();
     await expect(page.locator('#f-pages')).toHaveValue('34');
 
@@ -195,7 +195,7 @@ test.describe('сторінка заявки: майстер із трьох к�
     );
     expect(row.clientEstimate.status).toBe('ok');
     expect(row.clientEstimate.urgencyMult).toBe(1.3); // 7 днів із звичайних 10 → 70% → ×1,3
-    expect(row.clientEstimate.total).toBe(2200); // 1 200 × 1,4 (розрахункова) × 1,3 = 2 184 → 2 200
+    expect(row.clientEstimate.total).toBe(1800); // 1 000 × 1,4 (розрахункова) × 1,3 = 1 820 → 1 800
   });
 
   test('файли (крок 2): невірний тип, великий розмір, дубль, видалення', async ({ page }) => {
@@ -358,7 +358,7 @@ test.describe('телефон: липка нижня панель', () => {
     await expect(bar).toBeVisible();
     await expect(bar.getByRole('link', { name: 'Написати в Telegram' })).toHaveAttribute('href', 'https://t.me/zalikOK_ua');
     await pickOption(page.locator('#f-workType'), 'kursova');
-    await expect(bar).toContainText('≈ 1 200 грн');
+    await expect(bar).toContainText('≈ 1 000 грн');
     // видима лише одна кнопка «Далі»
     await expect(page.getByRole('button', { name: 'Далі' })).toHaveCount(1);
     const box = await bar.boundingBox();

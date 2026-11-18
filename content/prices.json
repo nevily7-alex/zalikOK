@@ -6,7 +6,7 @@
       "id": "study",
       "title": "Навчальні роботи",
       "items": [
-        { "id": "kursova", "title": "Курсова робота", "from": 1200 },
+        { "id": "kursova", "title": "Курсова робота", "from": 1000 },
         { "id": "dyplomna", "title": "Дипломна робота", "from": 4500 },
         { "id": "magisterska", "title": "Магістерська робота", "from": 7000 },
         { "id": "referat", "title": "Реферат", "from": 400 },

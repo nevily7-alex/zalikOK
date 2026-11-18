@@ -6,23 +6,23 @@ const TODAY = '2030-01-01';
 const plus = (days: number) => new Date(Date.parse(`${TODAY}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
 
 describe('калькулятор', () => {
-  it('приклад із тарифної моделі: курсова 35 стор., розрахункова, дедлайн через 7 днів → ~3 094 → 3 100', () => {
+  it('приклад із тарифної моделі: курсова 35 стор., розрахункова, дедлайн через 7 днів → 2 275 → 2 300', () => {
     const r = calculate({ typeId: 'kursova', qty: 35, complexity: 'calc', deadline: plus(7), today: TODAY });
     expect(r.status).toBe('ok');
     if (r.status !== 'ok') return;
     expect(r.normalDays).toBe(14);
     expect(r.urgencyMult).toBe(1.3);
-    expect(r.exact).toBeCloseTo(3094, 5);
-    expect(r.total).toBe(3100);
+    expect(r.exact).toBe(2275); // (1 000 + 10 × 25) × 1,4 × 1,3
+    expect(r.total).toBe(2300);
   });
 
   it('менший за пакет обсяг не знижує ціну; доплата лише за додатковий обсяг', () => {
     const small = calculate({ typeId: 'kursova', qty: 10, today: TODAY });
     const base = calculate({ typeId: 'kursova', qty: 25, today: TODAY });
     const more = calculate({ typeId: 'kursova', qty: 35, today: TODAY });
-    expect(small.status === 'ok' && small.exact).toBe(1200);
-    expect(base.status === 'ok' && base.exact).toBe(1200);
-    expect(more.status === 'ok' && more.exact).toBe(1700);
+    expect(small.status === 'ok' && small.exact).toBe(1000);
+    expect(base.status === 'ok' && base.exact).toBe(1000);
+    expect(more.status === 'ok' && more.exact).toBe(1250);
   });
 
   it('межі терміновості', () => {

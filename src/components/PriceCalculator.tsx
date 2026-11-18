@@ -230,6 +230,7 @@ export function PriceCalculator() {
             <p className="field-hint">{result.reason}</p>
           </>
         )}
+        {t && t.kind === 'pages' && t.note && result?.status !== 'incomplete' && <p className="field-hint">{t.note}</p>}
         {result?.status === 'ok' && (
           <>
             <p className="calc__price">Орієнтовно {fmtMoney(result.total)}</p>

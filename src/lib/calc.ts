@@ -12,7 +12,7 @@ interface SourceCfg {
   manualAbove: number;
 }
 export type Tariff =
-  | { kind: 'pages'; unit: string; base: number; baseQty: number; extra: number; normalDays: number; source?: SourceCfg; noComplexity?: boolean }
+  | { kind: 'pages'; unit: string; base: number; baseQty: number; extra: number; normalDays: number; source?: SourceCfg; noComplexity?: boolean; note?: string }
   | { kind: 'chars'; min: number; rate: number; perChars: number; baseChars: number; normalDays: number; quality?: boolean }
   | {
       kind: 'units';
@@ -188,5 +188,7 @@ export function calculate(input: CalcInput): CalcResult {
     }
   }
 
-  return { status: 'ok', total: roundTo(current), exact: current, lines, normalDays, urgencyMult };
+  // спершу до копійок (прибирає похибку float), потім до кроку округлення
+  const cents = Math.round(current * 100) / 100;
+  return { status: 'ok', total: roundTo(cents), exact: cents, lines, normalDays, urgencyMult };
 }

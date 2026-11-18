@@ -69,7 +69,7 @@ test.describe('прайс і калькулятор', () => {
     }
     expect(total).toBe(31);
     await tabs.nth(0).click();
-    await expect(page.locator('.price-row', { hasText: 'Курсова робота' }).first()).toContainText('від 1 200 грн');
+    await expect(page.locator('.price-row', { hasText: 'Курсова робота' }).first()).toContainText('від 1 000 грн');
     await tabs.nth(1).click();
     await expect(page.locator('.price-row', { hasText: 'Дисертація' }).first()).toContainText('від 50 000 грн');
     for (const banned of ['Підвищення унікальності', 'іспит', 'Тести']) expect(allText).not.toContain(banned);
@@ -99,14 +99,14 @@ test.describe('прайс і калькулятор', () => {
     const calc = page.locator('#calculator');
     await expect(calc.getByText('Оберіть вид роботи, щоб побачити орієнтовну вартість.')).toBeVisible();
     await pickOption(calc.getByLabel('Вид роботи'), 'kursova');
-    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 200 грн'); // базовий пакет 25 стор.
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 000 грн'); // базовий пакет 25 стор.
     await calc.getByLabel(/Обсяг, сторінок/).fill('35');
     await pickOption(calc.getByLabel('Складність'), 'calc');
     const d = new Date(Date.now() + 7 * 86_400_000);
     const deadline = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Kyiv' }).format(d);
     await pickDate(calc.getByLabel(/Дедлайн/), deadline);
-    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 3 100 грн');
-    await expect(calc).toContainText('Додатково 10 × 50 грн');
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 2 300 грн');
+    await expect(calc).toContainText('Додатково 10 × 25 грн');
     await expect(calc).toContainText('Складність ×1,4');
     await expect(calc).toContainText('Терміновість ×1,3');
     await expect(calc).toContainText('Остаточну вартість менеджер погоджує');
@@ -117,11 +117,26 @@ test.describe('прайс і калькулятор', () => {
     await expect(page.locator('#f-pages')).toHaveValue('35');
     await expect(page.locator('#f-deadline')).toHaveAttribute('data-value', deadline);
     // розрахунок підхоплюється формою: ціна одразу та сама, що в калькуляторі
-    await expect(page.getByTestId('estimate-price')).toHaveText('Орієнтовно 3 100 грн');
+    await expect(page.getByTestId('estimate-price')).toHaveText('Орієнтовно 2 300 грн');
     await fillStep1(page, { skipType: true });
     await clickNext(page);
-    await expect(page.locator('#f-comment')).toHaveValue(/Калькулятор: Курсова робота; 35 сторінок; орієнтовно 3100 грн/);
+    await expect(page.locator('#f-comment')).toHaveValue(/Калькулятор: Курсова робота; 35 сторінок; орієнтовно 2300 грн/);
     await expect(page.locator('#f-complexity')).toHaveAttribute('data-value', 'calc');
+  });
+
+  test('курсова: 1 000 грн за 25 стор. теорії, +25 грн за кожну наступну; примітка про практику й складність теми', async ({ page }) => {
+    await page.goto('/ceny');
+    const calc = page.locator('#calculator');
+    await pickOption(calc.getByLabel('Вид роботи'), 'kursova');
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 000 грн');
+    await expect(calc).toContainText('для теоретичної роботи на 25 сторінок');
+    await expect(calc).toContainText('Практична частина, розрахунки та складність теми можуть змінити вартість');
+    await calc.getByLabel(/Обсяг, сторінок/).fill('26');
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 050 грн'); // 1 000 + 25 = 1 025 → найближчі 50: 1 050
+    await calc.getByLabel(/Обсяг, сторінок/).fill('30');
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 150 грн'); // 1 000 + 5 × 25 = 1 125 → 1 150
+    await pickOption(calc.getByLabel('Складність'), 'calc');
+    await expect(calc.locator('.calc__price')).toHaveText('Орієнтовно 1 600 грн'); // 1 125 × 1,4 = 1 575 → 1 600
   });
 
   test('калькулятор: поля змінюються залежно від послуги (знаки, слайди, доопрацювання)', async ({ page }) => {
