@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { kyivDatePlus, pickDate, pickOption, sql, uniqueIp } from './helpers';
+import { pickDate, pickOption, sql, uniqueIp } from './helpers';
+import { clickNext, fillStep1, fillStep3 } from './wizard-helpers';
 
 test.beforeEach(async ({ context }) => {
   await context.setExtraHTTPHeaders({ 'x-forwarded-for': uniqueIp() });
@@ -115,7 +116,12 @@ test.describe('прайс і калькулятор', () => {
     await expect(page.locator('#f-workType')).toHaveAttribute('data-value', 'kursova');
     await expect(page.locator('#f-pages')).toHaveValue('35');
     await expect(page.locator('#f-deadline')).toHaveAttribute('data-value', deadline);
+    // розрахунок підхоплюється формою: ціна одразу та сама, що в калькуляторі
+    await expect(page.getByTestId('estimate-price')).toHaveText('Орієнтовно 3 100 грн');
+    await fillStep1(page, { skipType: true });
+    await clickNext(page);
     await expect(page.locator('#f-comment')).toHaveValue(/Калькулятор: Курсова робота; 35 сторінок; орієнтовно 3100 грн/);
+    await expect(page.locator('#f-complexity')).toHaveAttribute('data-value', 'calc');
   });
 
   test('калькулятор: поля змінюються залежно від послуги (знаки, слайди, доопрацювання)', async ({ page }) => {
@@ -162,13 +168,10 @@ test.describe('прайс і калькулятор', () => {
 
   test('вид роботи зберігається в заявці й видно в БД; невідомий вид відхиляється сервером', async ({ page, request }) => {
     await page.goto('/zaiavka?type=referat');
-    await pickOption(page.locator('#f-discipline'), 'law');
-    await page.fill('#f-topic', 'Правові аспекти захисту персональних даних');
-    await pickDate(page.locator('#f-deadline'), kyivDatePlus(45));
-    await page.getByLabel('Telegram', { exact: true }).check();
-    const contact = `@price_${Date.now().toString(36)}`;
-    await page.fill('#f-contact', contact);
-    await page.locator('#f-privacyConsent').check();
+    await fillStep1(page, { skipType: true });
+    await clickNext(page);
+    await clickNext(page);
+    const contact = await fillStep3(page, `@price_${Date.now().toString(36)}`);
     await page.getByRole('button', { name: 'Отримати розрахунок' }).click();
     await expect(page).toHaveURL(/\/diakuiemo\?ref=/);
     const rows = await sql<{ workType: string }>('select "workType" from "Request" where contact = $1', [contact]);

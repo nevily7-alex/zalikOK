@@ -101,11 +101,16 @@ export function PriceCalculator() {
     const p = new URLSearchParams();
     if (s.typeId) p.set('type', s.typeId);
     const q = Number(s.qty);
-    if (t?.kind === 'pages' && Number.isInteger(q) && q >= 1 && q <= 500) p.set('pages', String(q));
+    if (Number.isInteger(q) && q >= 1 && t && t.kind !== 'manual') p.set('qty', String(q));
+    if (s.complexity && s.complexity !== 'basic') p.set('cx', s.complexity);
+    if (s.variant) p.set('variant', s.variant);
+    if (s.revisionMode) p.set('mode', s.revisionMode);
+    if (s.quality && s.quality !== 'good') p.set('quality', s.quality);
+    if (s.sourceQty) p.set('src', s.sourceQty);
     if (s.deadline) p.set('deadline', s.deadline);
     if (scope) p.set('scope', scope);
     return `/zaiavka?${p.toString()}`;
-  }, [s.typeId, s.qty, s.deadline, scope, t]);
+  }, [s, scope, t]);
 
   const needsComplexity = t && (t.kind === 'pages' || t.kind === 'chars' || (t.kind === 'units' && !t.noComplexity));
 
@@ -255,7 +260,7 @@ export function PriceCalculator() {
         </Link>
       ) : (
         <Link
-          href="/#request"
+          href="/zaiavka"
           className="btn btn-secondary btn-block"
           onClick={() => track('estimate_cta_click', { placement: 'calculator-empty' })}
         >

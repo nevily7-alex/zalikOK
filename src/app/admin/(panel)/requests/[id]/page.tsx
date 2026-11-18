@@ -10,6 +10,14 @@ import { findPrice } from '@/lib/prices';
 import { unscannedDownloadAllowed } from '@/lib/server/downloads';
 import { assignToMe, retryNotification, updateNote, updatePrice, updateStatus } from '../../actions';
 
+function describeEstimate(v: unknown): string {
+  const e = v as { status?: string; total?: number; reason?: string; normalDays?: number } | null;
+  if (!e?.status) return '—';
+  if (e.status === 'ok') return `Орієнтовно ${e.total} грн за стартовими тарифами (звичайний строк ${e.normalDays} дн.). Остаточну ціну погоджує менеджер.`;
+  if (e.status === 'manual') return `Оцінка менеджером: ${e.reason ?? ''}`.trim();
+  return 'Розрахунок неповний';
+}
+
 export default async function RequestPage({ params }: { params: Promise<{ id: string }> }) {
   const manager = await requireManager();
   const { id } = await params;
@@ -31,7 +39,8 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
     ['Номер', r.publicReference],
     ['Створено', fmt(r.createdAt)],
     ['Послуга', SERVICE_LABELS[r.service as Service] ?? r.service],
-    ['Вид роботи', findPrice(r.workType)?.title ?? '—'],
+    ['Вид роботи', findPrice(r.workType)?.title ?? (r.workType === 'other' ? 'Інша робота (немає у прайсі)' : '—')],
+    ['Розрахунок клієнта', describeEstimate(r.clientEstimate)],
     [
       'Дисципліна',
       r.discipline === 'other'

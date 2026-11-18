@@ -92,7 +92,7 @@ test.describe('власні елементи керування', () => {
 
   test('DatePicker: «Сьогодні», недоступні минулі дати, помилка обов’язкового поля', async ({ page }) => {
     await page.goto('/zaiavka');
-    await page.getByRole('button', { name: 'Отримати розрахунок' }).click();
+    await page.getByRole('button', { name: 'Далі' }).click();
     await expect(page.locator('#deadline-error')).toBeVisible();
     const btn = page.locator('#f-deadline');
     await btn.click();

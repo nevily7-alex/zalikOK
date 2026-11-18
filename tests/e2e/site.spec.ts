@@ -26,7 +26,7 @@ test.describe('головна', () => {
     // Telegram власника налаштовано: лише його реальне посилання, відкривається в новій вкладці безпечно
     const tg = hrefs.filter((h) => /t\.me|telegram/i.test(h));
     expect(new Set(tg)).toEqual(new Set(['https://t.me/zalikOK_ua']));
-    const hero = page.getByRole('link', { name: 'Написати в Telegram' });
+    const hero = page.locator('.hero').getByRole('link', { name: 'Написати в Telegram' });
     await expect(hero).toHaveAttribute('target', '_blank');
     await expect(hero).toHaveAttribute('rel', /noopener/);
     await expect(page.locator('footer a[href="mailto:zalikok.ua@gmail.com"]')).toBeVisible();

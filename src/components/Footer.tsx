@@ -64,7 +64,7 @@ export function Footer() {
             </ul>
           ) : (
             <p>
-              Зв’яжіться з нами через <Link href="/#request">форму заявки</Link>.
+              Зв’яжіться з нами через <Link href="/zaiavka">форму заявки</Link>.
             </p>
           )}
         </div>

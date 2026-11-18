@@ -80,7 +80,8 @@ const CONTACT_ERRORS: Record<ContactMethod, string> = {
 
 export const requestSchema = z.object({
   service: z.enum(SERVICES, { error: 'Оберіть вид допомоги.' }),
-  workType: z.enum(PRICE_IDS).nullish(),
+  // 'other' — вид роботи, якого немає у прайсі (оцінює менеджер)
+  workType: z.enum([...PRICE_IDS, 'other']).nullish(),
   discipline: z.enum(DISCIPLINES, { error: 'Оберіть дисципліну.' }),
   disciplineOther: z.string().trim().max(120, 'Не більше 120 символів.').optional().default(''),
   topic: z.string().trim().max(500, 'Не більше 500 символів.').optional().default(''),

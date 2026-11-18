@@ -1,5 +1,7 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { StickyCta } from '@/components/StickyCta';
+import { getSiteConfig, telegramHref } from '@/lib/site-config';
 import { content } from '@/lib/content';
 
 const nav = content.nav.map((n) => ({ label: n.label, href: n.href.startsWith('#') ? `/${n.href}` : n.href }));
@@ -12,6 +14,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
       <Footer />
+      <StickyCta telegram={telegramHref(getSiteConfig())} />
     </>
   );
 }

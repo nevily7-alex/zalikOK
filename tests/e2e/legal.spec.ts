@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { toStep3 } from './wizard-helpers';
 
 test.describe('юридичні тексти', () => {
   test('Умови: рендеряться з Markdown без «сирих» зірочок, з потрібними розділами і реальними контактами', async ({ page }) => {
@@ -44,8 +45,10 @@ test.describe('юридичні тексти', () => {
   });
 
   test('форма посилається на політику, а FAQ про правки збігається з Умовами (три безкоштовні звернення)', async ({ page }) => {
+    await page.goto('/zaiavka');
+    await toStep3(page);
+    await expect(page.getByRole('link', { name: 'політикою конфіденційності' })).toHaveAttribute('href', '/privacy');
     await page.goto('/');
-    await expect(page.locator('#request').getByRole('link', { name: 'політикою конфіденційності' })).toHaveAttribute('href', '/privacy');
     await page.getByRole('button', { name: 'Чи можна внести правки?' }).click();
     await expect(page.locator('#faq')).toContainText('три безкоштовні звернення');
   });

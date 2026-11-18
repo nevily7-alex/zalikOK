@@ -62,6 +62,7 @@ model Request {
   idempotencyKeyHash   String?       @unique
   bodyHash             String?
   sourceUtm            Json?
+  clientEstimate       Json?
   closedAt             DateTime?
 
   attachments Attachment[]

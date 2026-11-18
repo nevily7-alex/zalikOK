@@ -9,6 +9,7 @@ import { intEnv } from '@/lib/server/env';
 import { processOutbox } from '@/lib/server/notify';
 import { getSiteConfig } from '@/lib/site-config';
 import { MAX_FILES, MAX_TOTAL_BYTES } from '@/lib/upload-rules';
+import { calculate } from '@/lib/calc';
 import { normalizeContact, validateRequest } from '@/lib/validation';
 
 export const maxDuration = 30;
@@ -18,6 +19,16 @@ const extraSchema = z.object({
   uploadSessionId: z.string().optional(),
   uploadSecret: z.string().optional(),
   fileIds: z.array(z.string().regex(/^[0-9a-f-]{36}$/)).max(MAX_FILES).optional().default([]),
+  estimate: z
+    .object({
+      qty: z.number().int().positive().max(100_000_000).optional(),
+      complexity: z.string().max(20).optional(),
+      quality: z.string().max(20).optional(),
+      variant: z.string().max(20).optional(),
+      revisionMode: z.enum(['proof', 'content']).optional(),
+      sourceQty: z.number().int().positive().max(100_000).optional(),
+    })
+    .optional(),
   utm: z
     .record(z.string(), z.string().max(100))
     .optional(),
@@ -99,6 +110,25 @@ export async function POST(req: Request) {
     session = s;
   }
 
+  // Орієнтовний розрахунок перераховується на сервері за тарифами (дані клієнта лише як вхідні параметри)
+  const est = extra.data.estimate ?? {};
+  let clientEstimate: Record<string, unknown> | undefined;
+  if (data.workType === 'other') {
+    clientEstimate = { status: 'manual', reason: 'Вид роботи, якого немає у прайсі: оцінює менеджер.' };
+  } else if (data.workType) {
+    const r = calculate({
+      typeId: data.workType,
+      qty: est.qty ?? data.pages ?? undefined,
+      complexity: est.complexity,
+      quality: est.quality,
+      variant: est.variant,
+      revisionMode: est.revisionMode,
+      sourceQty: est.sourceQty,
+      deadline: data.deadline,
+    });
+    clientEstimate = { ...r, input: { qty: est.qty ?? data.pages ?? null, complexity: est.complexity ?? null } };
+  }
+
   const utm = extra.data.utm
     ? Object.fromEntries(Object.entries(extra.data.utm).filter(([k]) => UTM_ALLOWED.includes(k)))
     : undefined;
@@ -124,6 +154,7 @@ export async function POST(req: Request) {
           idempotencyKeyHash: keyHash,
           bodyHash,
           sourceUtm: utm && Object.keys(utm).length ? utm : undefined,
+          clientEstimate: clientEstimate as never,
         },
       });
       if (session) {

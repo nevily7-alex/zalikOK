@@ -32,7 +32,7 @@ export function Hero() {
           ) : (
             // Telegram ще не налаштовано: замість неробочої кнопки — якір до форми
             <TrackedLink
-              href="/#request"
+              href="/zaiavka"
               className="btn btn-secondary"
               event="estimate_cta_click"
               payload={{ placement: 'hero-secondary' }}
