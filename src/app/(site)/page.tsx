@@ -3,6 +3,7 @@ import { Services } from '@/components/Services';
 import { Pricing } from '@/components/Pricing';
 import { Process } from '@/components/Process';
 import { CtaBanner } from '@/components/CtaBanner';
+import { RecentWorks } from '@/components/RecentWorks';
 import { Faq } from '@/components/Faq';
 import { SectionTitle } from '@/components/SectionTitle';
 import { content } from '@/lib/content';
@@ -32,6 +33,7 @@ export default function HomePage() {
       <Process />
       <Services />
       <Pricing />
+      <RecentWorks />
       <CtaBanner />
       <section id="faq" className="section container" aria-labelledby="faq-title">
         <SectionTitle id="faq-title">{content.faq.title}</SectionTitle>

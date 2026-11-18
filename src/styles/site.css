@@ -833,3 +833,122 @@ body:has(dialog[open]) {
   color: var(--color-text);
   font-weight: 700;
 }
+
+/* ---------- Останні виконані роботи ---------- */
+.works__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+.works__arrows {
+  display: none;
+  gap: 10px;
+}
+.works__arrow {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid var(--color-text);
+  border-radius: 50%;
+  background: var(--color-surface);
+  transition: background-color var(--transition);
+}
+.works__arrow:hover:not(:disabled) {
+  background: var(--color-primary);
+}
+.works__arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.works__track {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 4px 2px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  border-radius: var(--radius-card);
+}
+.work-card {
+  flex: 0 0 min(280px, 78%);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+.work-card:nth-child(3n + 1) {
+  background: var(--color-soft-yellow);
+  border-color: transparent;
+}
+.work-card__type {
+  align-self: flex-start;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 20px;
+}
+.work-card__subject {
+  margin-top: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 26px;
+  text-transform: capitalize;
+}
+.work-card__topic {
+  font-size: 13.5px;
+  color: var(--color-muted);
+}
+.work-card__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+.work-card:nth-child(3n + 1) .work-card__foot {
+  border-top-color: rgb(36 36 36 / 0.12);
+}
+.work-card__volume {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+.work-card__price {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  line-height: 28px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.works__note {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--color-muted);
+}
+.works__link {
+  color: var(--color-text);
+  font-weight: 700;
+  text-underline-offset: 4px;
+}
+@media (min-width: 768px) {
+  .works__arrows {
+    display: flex;
+  }
+  .work-card {
+    flex-basis: 280px;
+  }
+}
