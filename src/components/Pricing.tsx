@@ -9,7 +9,6 @@ export function Pricing() {
   return (
     <section id="pricing" className="section container" aria-labelledby="pricing-title">
       <SectionTitle id="pricing-title">{pricing.title}</SectionTitle>
-      <p className="section-lead">{pricing.description}</p>
       <ul className="pricing-factors">
         {pricing.factors.map((f) => (
           <li key={f.title} className="factor-card">
