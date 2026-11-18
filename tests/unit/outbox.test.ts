@@ -70,8 +70,7 @@ describe('outbox', () => {
     expect(call).toBeTruthy();
     expect(call![0]).toContain('api.telegram.org');
     const text = JSON.parse(call![1].body).text as string;
-    expect(text).toContain('Вид роботи: Курсова робота');
-    expect(text).not.toContain(CONTACT);
+    expect(text).toContain('Вид роботи:</b> Курсова робота');
   });
 
   it('збій Telegram не втрачає заявку: retry з backoff, потім failed, без токена в помилці', async () => {
@@ -96,7 +95,7 @@ describe('outbox', () => {
     expect(o.attempts).toBe(6);
   });
 
-  it('успішне повідомлення мінімальне: reference, послуга, дедлайн, посилання; без контакту', async () => {
+  it('повідомлення структуроване: reference, послуга, дедлайн, контакт для копіювання, посилання; без теми', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ result: { message_id: 7 } }) });
     vi.stubGlobal('fetch', fetchMock);
     const r = await makeRequest();
@@ -106,7 +105,7 @@ describe('outbox', () => {
     const text = JSON.parse(call![1].body).text as string;
     expect(text).toContain(r.publicReference);
     expect(text).toContain('/admin/requests/');
-    expect(text).not.toContain(CONTACT);
+    expect(text).toContain(`<code>${CONTACT}</code>`);
     expect(text).not.toContain('Приватна тема');
     const o = await prisma.notificationOutbox.findFirstOrThrow({ where: { requestId: r.id } });
     expect(o.status).toBe('sent');

@@ -2,7 +2,8 @@ import 'server-only';
 import { prisma } from './db';
 import { appUrl, env } from './env';
 import { findPrice } from '@/lib/prices';
-import { SERVICE_LABELS, type Service } from '@/lib/validation';
+import { todayInKyiv } from '@/lib/kyiv-date';
+import { CONTACT_LABELS, DISCIPLINE_LABELS, SERVICE_LABELS, type ContactMethod, type Discipline, type Service } from '@/lib/validation';
 
 const MAX_ATTEMPTS = 6;
 
@@ -22,12 +23,68 @@ function backoffMs(attempts: number): number {
   return Math.min(60 * 60 * 1000, 30_000 * 2 ** (attempts - 1));
 }
 
+const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+export interface NotifyRequest {
+  id: string;
+  publicReference: string;
+  service: string;
+  workType: string | null;
+  discipline: string;
+  disciplineOther: string | null;
+  pages: number | null;
+  deadline: Date;
+  contactMethod: string;
+  contact: string;
+}
+
+/**
+ * Текст сповіщення (Telegram, parse_mode=HTML). Контакт у <code> копіюється одним дотиком,
+ * поруч посилання «написати». Тему роботи й коментар не додаємо: вони лише в адмін-панелі.
+ */
+export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): string {
+  const service = SERVICE_LABELS[r.service as Service] ?? r.service;
+  const work = findPrice(r.workType)?.title;
+  const discipline = r.disciplineOther?.trim() || DISCIPLINE_LABELS[r.discipline as Discipline] || r.discipline;
+  const dl = r.deadline.toISOString().slice(0, 10);
+  const days = Math.round((Date.parse(`${dl}T00:00:00Z`) - Date.parse(`${todayInKyiv(now)}T00:00:00Z`)) / 86_400_000);
+  const left = days < 0 ? '' : days === 0 ? ' (сьогодні)' : ` (через ${days} дн.)`;
+  const [y, m, d] = dl.split('-');
+
+  const method = r.contactMethod as ContactMethod;
+  const c = r.contact.trim();
+  let contactLines: string[];
+  if (method === 'telegram') {
+    const user = c.replace(/^@/, '');
+    contactLines = [`✈️ <b>Telegram:</b> <code>@${esc(user)}</code>`, `👉 <a href="https://t.me/${encodeURIComponent(user)}">Написати в Telegram</a>`];
+  } else if (method === 'email') {
+    contactLines = [`✉️ <b>E-mail:</b> <code>${esc(c)}</code>`, `👉 <a href="mailto:${esc(c)}">Написати листа</a>`];
+  } else {
+    contactLines = [`📞 <b>${CONTACT_LABELS.phone}:</b> <code>${esc(c)}</code>`];
+  }
+
+  return [
+    `🆕 <b>Нова заявка</b> <code>${esc(r.publicReference)}</code>`,
+    '',
+    `📌 <b>Послуга:</b> ${esc(service)}`,
+    ...(work ? [`🧾 <b>Вид роботи:</b> ${esc(work)}`] : []),
+    `📚 <b>Предмет:</b> ${esc(discipline)}`,
+    ...(r.pages ? [`📄 <b>Обсяг:</b> ${r.pages} стор.`] : []),
+    `📅 <b>Дедлайн:</b> ${d}.${m}.${y}${left}`,
+    '',
+    '👤 <b>Контакт клієнта</b>',
+    ...contactLines,
+    '',
+    `🔗 <a href="${esc(appUrl())}/admin/requests/${esc(r.id)}">Відкрити заявку в адмінці</a>`,
+  ].join('\n');
+}
+
 async function sendTelegram(text: string): Promise<string> {
   const token = env('TELEGRAM_BOT_TOKEN')!;
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: env('TELEGRAM_MANAGER_CHAT_ID'), text, disable_web_page_preview: true }),
+    body: JSON.stringify({ chat_id: env('TELEGRAM_MANAGER_CHAT_ID'), text, parse_mode: 'HTML', disable_web_page_preview: true }),
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
@@ -46,7 +103,7 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
     where: { status: 'pending', nextAttemptAt: { lte: new Date() } },
     orderBy: { nextAttemptAt: 'asc' },
     take: limit,
-    include: { request: { select: { id: true, publicReference: true, service: true, workType: true, deadline: true } } },
+    include: { request: { select: { id: true, publicReference: true, service: true, workType: true, discipline: true, disciplineOther: true, pages: true, deadline: true, contactMethod: true, contact: true } } },
   });
 
   for (const item of due) {
@@ -66,16 +123,7 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
       continue;
     }
 
-    const r = item.request;
-    const service = SERVICE_LABELS[r.service as Service] ?? r.service;
-    const work = findPrice(r.workType)?.title;
-    const text = [
-      `Нова заявка ${r.publicReference}`,
-      `Послуга: ${service}`,
-      ...(work ? [`Вид роботи: ${work}`] : []),
-      `Дедлайн: ${r.deadline.toISOString().slice(0, 10)}`,
-      `${appUrl()}/admin/requests/${r.id}`,
-    ].join('\n');
+    const text = buildRequestMessage(item.request);
 
     try {
       const providerMessageId = await sendTelegram(text);
