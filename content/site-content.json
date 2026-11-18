@@ -3,16 +3,16 @@
   "locale": "uk-UA",
   "nav": [
     {
+      "label": "Як це працює",
+      "href": "#process"
+    },
+    {
       "label": "Послуги",
       "href": "#services"
     },
     {
       "label": "Вартість",
       "href": "/ceny"
-    },
-    {
-      "label": "Як це працює",
-      "href": "#process"
     },
     {
       "label": "Контакти",

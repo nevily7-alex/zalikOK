@@ -29,9 +29,9 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
       />
       <Hero />
+      <Process />
       <Services />
       <Pricing />
-      <Process />
       <RequestSection />
       <section id="faq" className="section container" aria-labelledby="faq-title">
         <SectionTitle id="faq-title">{content.faq.title}</SectionTitle>
