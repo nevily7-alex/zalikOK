@@ -100,7 +100,14 @@ test.describe('адмінка: заявки, оплата, дедлайн, ст�
     await expect(page.getByRole('heading', { name: 'Статистика' })).toBeVisible();
     await expect(page.getByText('Загальний заробіток')).toBeVisible();
     await expect(page.getByText('Залишок до сплати')).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Виконані' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Вид роботи' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Воронка заявок' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Заробіток за місяцями' })).toBeVisible();
+    // перемикач періоду
+    await page.getByRole('navigation', { name: 'Період' }).getByRole('link', { name: '7 днів' }).click();
+    await expect(page).toHaveURL(/\/admin\/stats\?p=week$/);
+    await expect(page.getByRole('navigation', { name: 'Період' }).getByRole('link', { name: '7 днів' })).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByText('Загальний заробіток')).toBeVisible();
 
     // «Провалено» і повернення в роботу
     await page.goto(`/admin/requests/${requestId}`);

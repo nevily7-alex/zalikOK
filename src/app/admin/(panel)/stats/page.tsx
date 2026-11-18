@@ -1,145 +1,201 @@
+import Link from 'next/link';
 import { prisma } from '@/lib/server/db';
 import { requireManager } from '@/lib/server/guard';
-import { ACTIVE_STATUSES, DONE_STATUSES, FAILED_STATUSES, TABS, formatMoney, toNum, type AnyStatus } from '@/lib/admin-labels';
-import { todayInKyiv } from '@/lib/kyiv-date';
+import { formatMoney, toNum } from '@/lib/admin-labels';
+import { PERIODS, computeStats, parsePeriod, type Group } from '@/lib/stats';
 import { findPrice } from '@/lib/prices';
+import { CountUp } from './CountUp';
 
 export const metadata = { title: 'Статистика — ЗалікОк' };
+export const dynamic = 'force-dynamic';
 
-const GROUPS = [
-  { key: 'new', label: 'Нові', statuses: ['new'] as AnyStatus[] },
-  { key: 'work', label: 'В роботі', statuses: TABS.find((t) => t.key === 'work')!.statuses as unknown as AnyStatus[] },
-  { key: 'done', label: 'Виконані', statuses: DONE_STATUSES },
-  { key: 'failed', label: 'Провалені', statuses: FAILED_STATUSES },
+const GROUPS: { key: Group; label: string; color: string }[] = [
+  { key: 'new', label: 'Нові', color: '#2a7de1' },
+  { key: 'work', label: 'В роботі', color: '#f2b705' },
+  { key: 'done', label: 'Виконані', color: '#2fb67a' },
+  { key: 'failed', label: 'Провалені', color: '#e5484d' },
 ];
-const groupOf = (s: AnyStatus) => GROUPS.find((g) => g.statuses.includes(s))?.key ?? 'work';
 
-export default async function StatsPage() {
+const typeLabel = (key: string) => (key === '—' ? 'Не вказано' : key === 'other' ? 'Інша робота' : (findPrice(key)?.title ?? key));
+
+export default async function StatsPage({ searchParams }: { searchParams: Promise<{ p?: string }> }) {
   await requireManager();
-  const monthStart = new Date(`${todayInKyiv().slice(0, 7)}-01T00:00:00Z`);
+  const period = parsePeriod((await searchParams).p);
 
-  const [byType, money, month] = await Promise.all([
-    prisma.request.groupBy({ by: ['workType', 'status'], _count: { _all: true }, _sum: { estimatedPrice: true } }),
-    prisma.request.findMany({ select: { status: true, estimatedPrice: true, prepayment: true } }),
-    prisma.request.findMany({
-      where: { status: { in: DONE_STATUSES as never }, closedAt: { gte: monthStart } },
-      select: { estimatedPrice: true },
-    }),
-  ]);
+  const rows = await prisma.request.findMany({
+    select: { status: true, workType: true, estimatedPrice: true, prepayment: true, createdAt: true, closedAt: true },
+  });
+  const s = computeStats(
+    rows.map((r) => ({ status: r.status, workType: r.workType, price: toNum(r.estimatedPrice), prepayment: toNum(r.prepayment), createdAt: r.createdAt, closedAt: r.closedAt })),
+    period,
+  );
 
-  const count = { new: 0, work: 0, done: 0, failed: 0 };
-  for (const g of byType) count[groupOf(g.status) as keyof typeof count] += g._count._all;
-  const total = count.new + count.work + count.done + count.failed;
-  const finished = count.done + count.failed;
-
-  let earned = 0;
-  let doneWithPrice = 0;
-  let expected = 0;
-  let prepaid = 0;
-  let toPay = 0;
-  for (const r of money) {
-    const price = toNum(r.estimatedPrice) ?? 0;
-    const pre = toNum(r.prepayment) ?? 0;
-    if (DONE_STATUSES.includes(r.status)) {
-      earned += price;
-      if (price > 0) doneWithPrice++;
-    } else if (ACTIVE_STATUSES.includes(r.status)) {
-      expected += price;
-      prepaid += pre;
-      toPay += Math.max(0, price - pre);
-    }
-  }
-  const earnedMonth = month.reduce((n, r) => n + (toNum(r.estimatedPrice) ?? 0), 0);
-
-  const rows = new Map<string, { label: string; new: number; work: number; done: number; failed: number; earned: number }>();
-  for (const g of byType) {
-    const key = g.workType ?? '—';
-    const label = g.workType === null ? 'Не вказано' : g.workType === 'other' ? 'Інша робота' : (findPrice(g.workType)?.title ?? g.workType);
-    const row = rows.get(key) ?? { label, new: 0, work: 0, done: 0, failed: 0, earned: 0 };
-    const grp = groupOf(g.status) as 'new' | 'work' | 'done' | 'failed';
-    row[grp] += g._count._all;
-    if (grp === 'done') row.earned += toNum(g._sum.estimatedPrice) ?? 0;
-    rows.set(key, row);
-  }
-  const table = [...rows.values()].sort((a, b) => b.new + b.work + b.done + b.failed - (a.new + a.work + a.done + a.failed));
-
-  const kpi: [string, string, string?][] = [
-    ['Усього заявок', String(total)],
-    ['Нові', String(count.new)],
-    ['В роботі', String(count.work)],
-    ['Виконані', String(count.done)],
-    ['Провалені', String(count.failed)],
-    ['Успішність', finished ? `${Math.round((count.done / finished) * 100)}%` : '—', 'виконані / (виконані + провалені)'],
-  ];
-  const cash: [string, string, string?][] = [
-    ['Загальний заробіток', formatMoney(earned), 'сума вартості виконаних заявок'],
-    ['Заробіток цього місяця', formatMoney(earnedMonth), 'виконані з початку місяця'],
-    ['Середній чек', doneWithPrice ? formatMoney(earned / doneWithPrice) : '—', 'за виконаними з вказаною вартістю'],
-    ['В роботі на суму', formatMoney(expected), 'очікуваний дохід'],
-    ['Отримано передоплат', formatMoney(prepaid), 'за заявками в роботі'],
-    ['Залишок до сплати', formatMoney(toPay), 'за заявками в роботі'],
+  const total = s.counts.total;
+  const C = 2 * Math.PI * 58;
+  const lens = GROUPS.map((g) => (total ? (s.counts[g.key] / total) * C : 0));
+  const segs = GROUPS.map((g, i) => ({ ...g, len: lens[i]!, offset: lens.slice(0, i).reduce((x, y) => x + y, 0) }));
+  const maxMonth = Math.max(1, ...s.months.map((m) => m.sum));
+  const maxType = Math.max(1, ...s.byType.map((t) => t.earned));
+  const funnel = [
+    { label: 'Усі заявки', value: s.funnel.all, color: '#2a7de1' },
+    { label: 'Взяті в роботу', value: s.funnel.taken, color: '#f2b705' },
+    { label: 'Успішно виконані', value: s.funnel.done, color: '#2fb67a' },
   ];
 
   return (
     <>
       <h1 className="admin-h1">Статистика</h1>
-      <h2 className="admin-h2">Заявки за статусами</h2>
-      <ul className="admin-kpis">
-        {kpi.map(([k, v, hint]) => (
-          <li key={k} className="admin-kpi">
-            <span>{k}</span>
-            <strong>{v}</strong>
-            {hint && <small>{hint}</small>}
-          </li>
+      <nav className="st-periods" aria-label="Період">
+        {PERIODS.map((p) => (
+          <Link key={p.key} href={p.key === 'all' ? '/admin/stats' : `/admin/stats?p=${p.key}`} aria-current={period === p.key ? 'page' : undefined}>
+            {p.label}
+          </Link>
         ))}
+      </nav>
+      <p className="field-hint st-hint">
+        Період рахується за датою створення заявок. Графік за місяцями завжди показує останні 12 місяців за датою закриття виконаних.
+      </p>
+
+      <ul className="st-tiles">
+        <li className="st-tile st-tile--y">
+          <span>Загальний заробіток</span>
+          <strong>
+            <CountUp value={s.earned} unit=" грн" />
+          </strong>
+          <small>сума вартості виконаних</small>
+        </li>
+        <li className="st-tile st-tile--g">
+          <span>Середній чек</span>
+          <strong>{s.avgCheck === null ? '—' : <CountUp value={s.avgCheck} unit=" грн" />}</strong>
+          <small>за виконаними з вказаною вартістю</small>
+        </li>
+        <li className="st-tile st-tile--o">
+          <span>Очікується (в роботі)</span>
+          <strong>
+            <CountUp value={s.expected} unit=" грн" />
+          </strong>
+          <small>сума заявок у роботі</small>
+        </li>
+        <li className="st-tile st-tile--d">
+          <span>Залишок до сплати</span>
+          <strong>
+            <CountUp value={s.toPay} unit=" грн" />
+          </strong>
+          <small>за заявками в роботі</small>
+        </li>
       </ul>
-      <h2 className="admin-h2">Гроші</h2>
-      <ul className="admin-kpis">
-        {cash.map(([k, v, hint]) => (
-          <li key={k} className="admin-kpi admin-kpi--money">
-            <span>{k}</span>
-            <strong>{v}</strong>
-            {hint && <small>{hint}</small>}
-          </li>
-        ))}
-      </ul>
-      <h2 className="admin-h2">За видами робіт</h2>
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <caption className="sr-only">Заявки за видами робіт і статусами</caption>
-          <thead>
-            <tr>
-              <th scope="col">Вид роботи</th>
-              <th scope="col">Нові</th>
-              <th scope="col">В роботі</th>
-              <th scope="col">Виконані</th>
-              <th scope="col">Провалені</th>
-              <th scope="col">Усього</th>
-              <th scope="col">Заробіток</th>
-            </tr>
-          </thead>
-          <tbody>
-            {table.length === 0 && (
-              <tr>
-                <td colSpan={7}>Заявок ще немає.</td>
-              </tr>
-            )}
-            {table.map((r) => (
-              <tr key={r.label}>
-                <td>{r.label}</td>
-                <td>{r.new}</td>
-                <td>{r.work}</td>
-                <td>{r.done}</td>
-                <td>{r.failed}</td>
-                <td>
-                  <strong>{r.new + r.work + r.done + r.failed}</strong>
-                </td>
-                <td>{formatMoney(r.earned)}</td>
-              </tr>
+
+      <div className="st-row2">
+        <section className="admin-card" aria-labelledby="st-status">
+          <h2 id="st-status">Заявки за статусами</h2>
+          <p className="field-hint">Скільки заявок у кожному статусі</p>
+          <div className="st-donut">
+            <svg viewBox="0 0 170 170" role="img" aria-label="Розподіл заявок за статусами">
+              <circle cx="85" cy="85" r="58" fill="none" stroke="#f1eee5" strokeWidth="26" />
+              {segs.map(
+                (g) =>
+                  g.len > 0 && (
+                    <circle
+                      key={g.key}
+                      className="st-donut__seg"
+                      cx="85"
+                      cy="85"
+                      r="58"
+                      fill="none"
+                      stroke={g.color}
+                      strokeWidth="26"
+                      strokeDasharray={`${g.len} ${C - g.len}`}
+                      strokeDashoffset={-g.offset}
+                      style={{ ['--len' as string]: g.len, ['--c' as string]: C }}
+                    />
+                  ),
+              )}
+            </svg>
+            <ul className="st-legend">
+              {GROUPS.map((g) => (
+                <li key={g.key}>
+                  <i style={{ background: g.color }} aria-hidden="true" />
+                  {g.label}
+                  <b>
+                    {s.counts[g.key]} · {total ? Math.round((s.counts[g.key] / total) * 100) : 0}%
+                  </b>
+                </li>
+              ))}
+              <li className="st-legend__total">
+                Усього<b>{total}</b>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="admin-card" aria-labelledby="st-funnel">
+          <h2 id="st-funnel">Воронка заявок</h2>
+          <p className="field-hint">
+            Успішність: <b>{s.success === null ? '—' : `${s.success}%`}</b> (виконані / виконані + провалені)
+          </p>
+          <ul className="st-funnel">
+            {funnel.map((f) => (
+              <li key={f.label} style={{ background: f.color, ['--w' as string]: `${s.funnel.all ? Math.round((f.value / s.funnel.all) * 100) : 0}%` }}>
+                {f.label}
+                <b>{f.value}</b>
+              </li>
             ))}
-          </tbody>
-        </table>
+          </ul>
+        </section>
       </div>
+
+      <section className="admin-card st-block" aria-labelledby="st-months">
+        <h2 id="st-months">Заробіток за місяцями</h2>
+        <p className="field-hint">Виконані заявки, сума вартості</p>
+        <ol className="st-bars">
+          {s.months.map((m) => (
+            <li key={m.key} title={`${m.label}: ${formatMoney(m.sum)}`}>
+              <em>{formatMoney(m.sum)}</em>
+              <i style={{ ['--h' as string]: `${Math.round((m.sum / maxMonth) * 100)}%` }} />
+              <span>{m.label}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="admin-card st-block" aria-labelledby="st-types">
+        <h2 id="st-types">За видами робіт</h2>
+        <p className="field-hint">Кількість заявок і заробіток</p>
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <caption className="sr-only">Заявки за видами робіт</caption>
+            <thead>
+              <tr>
+                <th scope="col">Вид роботи</th>
+                <th scope="col">Заявок</th>
+                <th scope="col">Заробіток</th>
+                <th scope="col">Частка</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.byType.length === 0 && (
+                <tr>
+                  <td colSpan={4}>Заявок за цей період немає.</td>
+                </tr>
+              )}
+              {s.byType.map((t) => (
+                <tr key={t.key}>
+                  <td>{typeLabel(t.key)}</td>
+                  <td>{t.count}</td>
+                  <td>
+                    <strong>{formatMoney(t.earned)}</strong>
+                  </td>
+                  <td className="st-share">
+                    <span className="st-minibar" aria-hidden="true">
+                      <i style={{ ['--w' as string]: `${Math.round((t.earned / maxType) * 100)}%` }} />
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </>
   );
 }
