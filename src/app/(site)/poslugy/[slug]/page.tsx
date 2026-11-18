@@ -30,13 +30,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** Підсвічує жовтим кінець заголовка: усе, крім першого слова (або єдине слово). */
+/** Підсвічує жовтим лише ключову фразу (до 2 слів), «на замовлення» лишається звичайним текстом. */
 function Marked({ text }: { text: string }) {
-  const words = text.trim().split(/\s+/);
-  if (words.length < 2) return <mark>{text}</mark>;
+  const m = text.trim().match(/^(.*?)(\s+на замовлення)?$/);
+  const core = (m?.[1] ?? text).split(/\s+/);
+  const tail = m?.[2] ?? '';
+  if (core.length > 4) return <>{text}</>;
+  const n = core.length === 1 ? 1 : Math.min(2, core.length - 1);
+  const head = core.slice(0, core.length - n).join(' ');
   return (
     <>
-      {words[0]} <mark>{words.slice(1).join(' ')}</mark>
+      {head && `${head} `}
+      <mark>{core.slice(core.length - n).join(' ')}</mark>
+      {tail}
     </>
   );
 }

@@ -1088,15 +1088,15 @@ body:has(dialog[open]) {
 .svc-sec { padding-block: 48px; }
 .svc-sec--band { background: var(--color-neutral); }
 .svc-title { font-family: var(--font-heading); font-size: clamp(26px, 3.4vw, 38px); line-height: 1.15; margin: 0 0 24px; letter-spacing: -0.02em; }
-.svc-title mark { background: linear-gradient(transparent 62%, var(--color-primary) 62%); color: inherit; }
+.svc-title mark { background: linear-gradient(transparent 64%, var(--color-primary) 64%, var(--color-primary) 94%, transparent 94%); color: inherit; padding: 0 0.1em; margin: 0 -0.1em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .svc-link { text-decoration: underline; font-weight: 600; }
 
 /* шапка */
 .svc-hero { position: relative; overflow: hidden; }
 .svc-hero__grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px 40px; align-items: center; padding-block: 24px 48px; }
 .svc-hero__crumbs { grid-column: 1 / -1; padding-top: 6px; }
-.svc-hero__h1 { font-family: var(--font-heading); font-size: clamp(34px, 5vw, 56px); line-height: 1.06; margin: 0; letter-spacing: -0.02em; }
-.svc-hero__h1 mark { background: var(--color-primary); color: inherit; padding: 0 10px; border-radius: 12px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.svc-hero__h1 { font-family: var(--font-heading); font-size: clamp(32px, 4.6vw, 52px); line-height: 1.14; margin: 0; letter-spacing: -0.02em; }
+.svc-hero__h1 mark { background: linear-gradient(transparent 10%, var(--color-primary) 10%, var(--color-primary) 90%, transparent 90%); color: inherit; padding: 0 0.16em; border-radius: 0.2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .svc-hero__lead { margin: 16px 0 0; max-width: 560px; color: var(--color-muted); font-size: 18px; line-height: 1.55; }
 .svc-hero__cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .svc-hero__art { position: relative; min-height: 300px; }
