@@ -87,7 +87,12 @@ def percent_risky(text: str) -> bool:
     return any(v != '50' for v in vals)
 
 
+CITY_STEMS = ['Києв', 'Харк', 'Льво', 'Львів', 'Одес', 'Дніпр', 'Запоріж', 'Вінниц', 'Полтав']
+
+
 def risk_reason(text: str):
+    if len({c for c in CITY_STEMS if c in text}) >= 2:
+        return 'перелік міст (географія)'
     for name, rx in RISKY:
         if name.startswith('відсотки'):
             if percent_risky(text):

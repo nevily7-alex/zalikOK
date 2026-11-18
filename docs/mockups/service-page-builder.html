@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Конструктор сторінки послуги — ЗалікОк</title>
+<style>
+@font-face{font-family:Manrope;src:url('../../src/fonts/Manrope-subset.woff2') format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:'Nunito Sans';src:url('../../src/fonts/NunitoSans-subset.woff2') format('woff2');font-weight:300 900;font-display:swap}
+:root{--bg:#fffefa;--text:#242424;--primary:#ffd43b;--primary-hover:#f2c626;--soft:#fff4cc;--neutral:#f7f5ef;--muted:#64616b;--border:#e8e4da;--surface:#fff;--graphite:#2b2a2e;
+--h:Manrope,system-ui,sans-serif;--b:'Nunito Sans',system-ui,sans-serif;--r:24px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#ece9df;color:var(--text);font:16px/26px var(--b)}
+h1,h2,h3,h4{font-family:var(--h);margin:0;font-weight:800;letter-spacing:-.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+.shell{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:100vh}
+@media(max-width:960px){.shell{grid-template-columns:1fr}.builder{position:static!important;height:auto!important}}
+/* ===== панель конструктора ===== */
+.builder{position:sticky;top:0;height:100vh;overflow:auto;background:#fff;border-right:1px solid var(--border)}
+.builder__in{padding:20px;display:grid;gap:16px}
+.builder h1{font-size:19px;line-height:25px}
+.builder p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:19px}
+.grp{border:1px solid var(--border);border-radius:16px;padding:12px;display:grid;gap:8px}
+.grp__head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.grp__head b{font:800 13px/18px var(--h)}
+.sw{position:relative;width:38px;height:22px;border-radius:99px;border:0;background:#d6d1c3;padding:0;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw[aria-pressed=true]{background:var(--text)}.sw[aria-pressed=true]::after{transform:translateX(16px)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1.5px solid var(--border);background:#fff;border-radius:99px;padding:5px 12px;font-size:13px;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--primary);border-color:var(--text)}
+.out{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:12px;padding:10px;font:12px/18px ui-monospace,Consolas,monospace;background:var(--neutral)}
+.copy{border:0;border-radius:99px;background:var(--text);color:#fff;padding:10px 16px;font-weight:700}
+/* ===== сторінка ===== */
+.stage{min-width:0;background:var(--bg)}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(255,254,250,.9);backdrop-filter:blur(8px);z-index:5}
+.logo{font:800 22px var(--h)}.logo i{font-style:normal;background:var(--primary);padding:0 6px;border-radius:8px;margin-left:2px}
+.nav{display:flex;gap:22px;font-weight:600;font-size:15px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+section.blk{padding:56px 0}
+.crumbs{font-size:14px;color:var(--muted);padding-top:22px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:14px 26px;font:800 16px var(--h);text-decoration:none;position:relative;overflow:hidden;transition:transform .2s,background .2s}
+.btn-p{background:var(--primary)}.btn-p:hover{background:var(--primary-hover);transform:translateY(-2px)}
+.btn-d{background:var(--text);color:#fff}
+.btn-s{background:#fff;border:1.5px solid var(--text)}
+.sec-title{font-size:clamp(26px,3.4vw,38px);line-height:1.15;margin-bottom:12px}
+.sec-title mark{background:linear-gradient(transparent 62%,var(--primary) 62%);color:inherit}
+.lead{color:var(--muted);max-width:640px;margin:0 0 28px}
+/* анімації */
+[data-anim=off] *{animation:none!important;transition:none!important}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+[data-anim=off] .rv{opacity:1;transform:none}
+[data-anim=lively] .rv{transform:translateY(40px) scale(.97)}
+[data-anim=lively] .rv.in{transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+.lift{transition:transform .25s,box-shadow .25s,background .25s}
+.lift:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgb(36 36 36/.1)}
+[data-anim=subtle] .lift:hover{transform:translateY(-3px)}
+@keyframes float{0%,100%{transform:translateY(0) rotate(var(--rot,0deg))}50%{transform:translateY(-14px) rotate(var(--rot,0deg))}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes marq{to{transform:translateX(-50%)}}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+.btn-p::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 3.4s infinite}
+[data-anim=subtle] .btn-p::after{display:none}
+/* HERO */
+.hero{position:relative;overflow:hidden}
+.hero h1{font-size:clamp(34px,5vw,56px);line-height:1.06}
+.hero h1 mark{background:var(--primary);color:inherit;padding:0 10px;border-radius:12px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.hero__cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero--a .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-block:48px}
+@media(max-width:820px){.hero--a .wrap{grid-template-columns:1fr}.hero__art{display:none}}
+.hero__art{position:relative;height:340px}
+.fc{position:absolute;background:#fff;border:1px solid var(--border);border-radius:20px;padding:14px 18px;box-shadow:0 14px 34px rgb(36 36 36/.1);font-weight:700;font-size:15px;animation:float 5s ease-in-out infinite}
+[data-anim=off] .fc,[data-anim=subtle] .fc{animation:none}
+[data-anim=subtle] .fc{animation:float 8s ease-in-out infinite}
+.fc small{display:block;color:var(--muted);font-weight:500}
+.fc.y{background:var(--primary);border-color:var(--primary)}
+.blob{position:absolute;border-radius:50%;background:var(--soft);z-index:0}
+.hero--b{text-align:center;background:radial-gradient(circle at 50% 0,var(--soft),transparent 70%)}
+.hero--b .wrap{padding-block:56px 40px}
+.hero--b .hero__cta{justify-content:center}
+.hero--b p.lead{margin-inline:auto}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
+.stat{background:#fff;border:1px solid var(--border);border-radius:20px;padding:18px}
+.stat b{display:block;font:800 32px var(--h)}
+.stat span{color:var(--muted);font-size:14px}
+.hero--c .wrap{padding-block:40px}
+.hero--c{background:var(--graphite);color:#fff}
+.hero--c .lead{color:#d8d5cc}.hero--c .crumbs{color:#a9a69d}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.chip{padding:6px 14px;border-radius:99px;background:rgba(255,255,255,.12);font-size:14px}
+.ring{position:absolute;right:-80px;top:-80px;width:320px;height:320px;border:36px solid var(--primary);border-radius:50%;opacity:.9;animation:spin 30s linear infinite}
+[data-anim=off] .ring{animation:none}
+/* HIGHLIGHTS */
+.hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.hl-grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.ic{width:48px;height:48px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:24px;margin-bottom:14px}
+.card h3{font-size:20px;margin-bottom:6px}.card p{margin:0;color:var(--muted);font-size:15px;line-height:23px}
+.tl{display:grid;gap:0;position:relative;max-width:720px}
+.tl::before{content:"";position:absolute;left:23px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.tl__i{display:grid;grid-template-columns:48px 1fr;gap:18px;padding:12px 0;position:relative}
+.tl__n{width:48px;height:48px;border-radius:50%;background:var(--primary);display:grid;place-items:center;font:800 18px var(--h);position:relative;z-index:1}
+.tl__i h3{font-size:19px}.tl__i p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.mq{overflow:hidden;background:var(--text);color:#fff;border-radius:99px;padding:14px 0}
+.mq__t{display:flex;gap:44px;width:max-content;animation:marq 22s linear infinite;font:700 17px var(--h)}
+[data-anim=off] .mq__t{animation:none}
+.mq__t span::before{content:"✦";color:var(--primary);margin-right:44px}
+/* PRICE */
+.pr{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:820px){.pr{grid-template-columns:1fr}}
+.pr__price{font:800 clamp(38px,5vw,56px) var(--h);line-height:1}
+.pr__tag{display:inline-block;background:var(--soft);padding:4px 12px;border-radius:99px;font-weight:700;font-size:13px;margin-bottom:12px}
+.calc{background:var(--soft);border-radius:var(--r);padding:24px;display:grid;gap:14px;position:sticky;top:90px}
+.calc label{display:grid;gap:6px;font-weight:700;font-size:14px}
+.calc input[type=range]{accent-color:var(--text)}
+.calc .res{font:800 30px var(--h)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.tiers{grid-template-columns:1fr}}
+.tier{position:relative}.tier.top{background:var(--primary);border-color:var(--primary)}
+.tier .badge{position:absolute;top:-12px;right:18px;background:var(--text);color:#fff;font-size:12px;font-weight:800;padding:4px 12px;border-radius:99px}
+.tier b{display:block;font:800 30px var(--h);margin:10px 0}
+/* ARTICLE */
+.art{display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:start}
+@media(max-width:820px){.art{grid-template-columns:1fr}}
+.toc{position:sticky;top:90px;display:grid;gap:4px;border-left:2px solid var(--border);padding-left:6px}
+.toc a{padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:var(--muted);transition:.2s}
+.toc a.on,.toc a:hover{background:var(--soft);color:var(--text)}
+.prose h3{font-size:24px;margin:0 0 10px}.prose p{margin:0 0 12px;color:#3d3b42}
+.prose section{padding:6px 0 26px;scroll-margin-top:90px}
+.cols{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+.cols .card{padding:20px}.cols .card h3{font-size:18px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button{border:1.5px solid var(--border);background:#fff;border-radius:99px;padding:9px 18px;font-weight:700}
+.tabs button[aria-pressed=true]{background:var(--text);color:#fff;border-color:var(--text)}
+.tp{display:none;animation:fadeup .4s}.tp.on{display:block}
+@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* FAQ */
+.faq{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+@media(max-width:820px){.faq{grid-template-columns:1fr}}
+.fq{border:1px solid var(--border);border-radius:20px;background:#fff;overflow:hidden;transition:background .25s}
+.fq.open{background:var(--soft);border-color:var(--soft)}
+.fq button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:none;text-align:left;padding:18px 20px;font:700 16px/22px var(--h)}
+.fq i{font-style:normal;transition:transform .3s;font-size:20px}.fq.open i{transform:rotate(45deg)}
+.fq div{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s}
+.fq.open div{grid-template-rows:1fr}
+.fq div p{overflow:hidden;margin:0;padding:0 20px;color:#3d3b42}
+.fq.open div p{padding-bottom:18px}
+.faq--side{grid-template-columns:1fr 340px}
+@media(max-width:820px){.faq--side{grid-template-columns:1fr}}
+.faq--side .col{display:grid;gap:12px}
+.ask{background:var(--text);color:#fff;border-radius:var(--r);padding:26px;position:sticky;top:90px}
+.ask h3{font-size:22px;margin-bottom:8px}.ask p{color:#cfccc3;margin:0 0 16px}
+/* SUBJECTS */
+.sj{display:flex;gap:10px;flex-wrap:wrap}
+.sj span{padding:9px 18px;background:#fff;border:1px solid var(--border);border-radius:99px;font-weight:600;transition:.2s}
+.sj span:hover{background:var(--primary);border-color:var(--primary);transform:translateY(-2px)}
+.sjm{display:grid;gap:10px;overflow:hidden}
+.sjm__r{display:flex;gap:10px;width:max-content;animation:marq 40s linear infinite}
+.sjm__r:nth-child(2){animation-direction:reverse;animation-duration:50s}
+[data-anim=off] .sjm__r{animation:none}
+.sjm__r span{padding:12px 22px;background:var(--neutral);border-radius:16px;font-weight:700;white-space:nowrap}
+.sjg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:820px){.sjg{grid-template-columns:repeat(2,1fr)}}
+.sjg span{padding:18px;border-radius:18px;background:#fff;border:1px solid var(--border);font-weight:700;display:flex;gap:10px;align-items:center;transition:.2s}
+.sjg span::before{content:attr(data-e);font-size:22px}
+.sjg span:hover{background:var(--soft);transform:scale(1.03)}
+/* CTA */
+.cta{border-radius:32px;padding:44px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;position:relative;overflow:hidden}
+.cta h2{font-size:clamp(26px,3.4vw,38px);line-height:1.15;max-width:560px}
+.cta p{margin:8px 0 0;max-width:520px}
+.cta--y{background:var(--primary)}
+.cta--y::after{content:"";position:absolute;right:-60px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.35);animation:float 6s ease-in-out infinite}
+.cta--d{background:var(--graphite);color:#fff}.cta--d p{color:#d1cec5}
+.cta--d::after{content:"";position:absolute;right:-40px;top:-60px;width:240px;height:240px;border-radius:50%;border:30px solid var(--primary);animation:spin 24s linear infinite}
+[data-anim=off] .cta::after{animation:none}
+.cta>*{position:relative;z-index:1}
+.foot{padding:30px;text-align:center;color:var(--muted);font-size:14px;border-top:1px solid var(--border)}
+.hidden{display:none!important}
+</style>
+</head>
+<body data-anim="lively">
+<div class="shell">
+<aside class="builder"><div class="builder__in">
+  <div><h1>Конструктор сторінки послуги</h1><p>Одна структура для всіх 18 послуг: змінюється лише текст. Увімкніть потрібні секції, оберіть вигляд кожної й рівень анімації — праворуч усе оновлюється одразу. Зверху сторінки — приклад «Курсові роботи».</p></div>
+  <div class="grp"><div class="grp__head"><b>Анімації</b></div>
+    <div class="seg" data-key="anim"><button data-v="off">Вимкнено</button><button data-v="subtle">Спокійні</button><button data-v="lively" aria-pressed="true">Жваві</button></div></div>
+  <div class="grp"><div class="grp__head"><b>1. Шапка</b><button class="sw" data-sec="hero" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="hero"><button data-v="a" aria-pressed="true">Текст + плаваючі картки</button><button data-v="b">По центру + цифри</button><button data-v="c">Графітова</button></div></div>
+  <div class="grp"><div class="grp__head"><b>2. Переваги / умови</b><button class="sw" data-sec="hl" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="hl"><button data-v="cards" aria-pressed="true">Картки з іконками</button><button data-v="tl">Таймлайн кроків</button><button data-v="mq">Бігучий рядок</button></div></div>
+  <div class="grp"><div class="grp__head"><b>3. Вартість</b><button class="sw" data-sec="price" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="price"><button data-v="calc" aria-pressed="true">Ціна + калькулятор</button><button data-v="tiers">Три тарифні картки</button></div></div>
+  <div class="grp"><div class="grp__head"><b>4. Стаття (SEO-текст)</b><button class="sw" data-sec="art" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="art"><button data-v="toc" aria-pressed="true">Зміст збоку</button><button data-v="tabs">Вкладки за темами</button><button data-v="cards">Картки 2×N</button></div></div>
+  <div class="grp"><div class="grp__head"><b>5. Питання й відповіді</b><button class="sw" data-sec="faq" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="faq"><button data-v="two" aria-pressed="true">Дві колонки</button><button data-v="side">Колонка + блок «Є питання?»</button></div></div>
+  <div class="grp"><div class="grp__head"><b>6. Предмети</b><button class="sw" data-sec="sj" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="sj"><button data-v="chips" aria-pressed="true">Теги</button><button data-v="marq">Два бігучі рядки</button><button data-v="grid">Плитки з іконками</button></div></div>
+  <div class="grp"><div class="grp__head"><b>7. Заклик до заявки</b><button class="sw" data-sec="cta" aria-pressed="true" aria-label="Показати"></button></div>
+    <div class="seg" data-key="cta"><button data-v="y" aria-pressed="true">Жовтий</button><button data-v="d">Графітовий</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Мій вибір (скопіюйте й надішліть)</b></div>
+    <textarea class="out" id="out" readonly></textarea><button class="copy" id="copy">Скопіювати</button></div>
+</div></aside>
+
+<main class="stage" id="stage" data-anim="lively">
+<div class="hdr"><div class="logo">Залік<i>Ок</i></div><nav class="nav"><span>Як це працює</span><span>Послуги</span><span>Вартість</span><span>Контакти</span></nav></div>
+
+<!-- 1 HERO -->
+<section class="hero hero--a" data-sec="hero" id="hero">
+  <div class="wrap">
+    <div class="crumbs">Послуги / Курсові роботи</div>
+    <div class="hero__txt"><h1 class="rv">Замовити <mark>курсову роботу</mark></h1>
+      <p class="lead rv d1" style="margin-top:16px">Профільний автор, робота за методичкою вашої кафедри. Ціна — до початку роботи, без прихованих доплат.</p>
+      <div class="hero__cta rv d2"><a class="btn btn-p" href="#">Дізнатися вартість →</a><a class="btn btn-s" href="#">Написати в Telegram</a></div>
+      <div class="stats hero__stats rv d3"><div class="stat"><b data-count="25">25</b><span>сторінок у базовому пакеті</span></div><div class="stat"><b data-count="3">3</b><span>безкоштовні звернення з правками</span></div><div class="stat"><b>50/50</b><span>схема оплати на вибір</span></div></div>
+      <div class="chips hero__chips"><span class="chip">Економіка</span><span class="chip">Право</span><span class="chip">Психологія</span><span class="chip">Маркетинг</span></div>
+    </div>
+    <div class="hero__art"><div class="blob" style="width:300px;height:300px;right:10px;top:20px"></div>
+      <div class="fc y" style="right:20px;top:20px;--rot:3deg">від 1 000 грн<small>базовий пакет, 25 стор.</small></div>
+      <div class="fc" style="left:10px;top:110px;--rot:-3deg;animation-delay:-1.5s">Погодження плану<small>до початку роботи</small></div>
+      <div class="fc" style="right:50px;top:210px;animation-delay:-3s">3 правки<small>за зауваженнями керівника</small></div></div>
+  </div>
+</section>
+
+<!-- 2 HIGHLIGHTS -->
+<section class="blk" data-sec="hl" id="hl"><div class="wrap">
+  <h2 class="sec-title rv">Одні й ті самі <mark>умови</mark> для кожної роботи</h2><p class="lead rv d1">Як ми працюємо — коротко, без обіцянок, яких не можемо виконати.</p>
+  <div class="hl hl--cards"><div class="hl-grid">
+    <div class="card lift rv"><div class="ic">📝</div><h3>Ціна до початку</h3><p>Менеджер погоджує вартість і строк письмово — після цього починається робота.</p></div>
+    <div class="card lift rv d1"><div class="ic">💬</div><h3>Три правки</h3><p>Три безкоштовні звернення за зауваженнями до початкового завдання.</p></div>
+    <div class="card lift rv d2"><div class="ic">🔒</div><h3>Конфіденційність</h3><p>Файли зберігаються приватно, доступ — лише у менеджера.</p></div></div></div>
+  <div class="hl hl--tl hidden"><div class="tl">
+    <div class="tl__i rv"><div class="tl__n">1</div><div><h3>Заявка</h3><p>Тема, методичка, дата здачі — за три короткі кроки.</p></div></div>
+    <div class="tl__i rv d1"><div class="tl__n">2</div><div><h3>Погодження ціни</h3><p>Менеджер називає вартість і строк. Нічого не платите, поки не погодите.</p></div></div>
+    <div class="tl__i rv d2"><div class="tl__n">3</div><div><h3>Виконання</h3><p>Робота починається після погодження та передбаченої оплати.</p></div></div>
+    <div class="tl__i rv d3"><div class="tl__n">4</div><div><h3>Передача й правки</h3><p>Отримуєте файл, надсилаєте зауваження — вносимо правки.</p></div></div></div></div>
+  <div class="hl hl--mq hidden"><div class="mq"><div class="mq__t"><span>Ціна до початку роботи</span><span>Три безкоштовні правки</span><span>Оплата 50/50 або 100%</span><span>Приватні файли</span><span>Ціна до початку роботи</span><span>Три безкоштовні правки</span><span>Оплата 50/50 або 100%</span><span>Приватні файли</span></div></div></div>
+</div></section>
+
+<!-- 3 PRICE -->
+<section class="blk" data-sec="price" id="price" style="background:var(--neutral)"><div class="wrap">
+  <h2 class="sec-title rv">Вартість <mark>курсової</mark></h2>
+  <div class="pr pr--calc"><div class="rv"><span class="pr__tag">Орієнтовна стартова ціна</span><div class="pr__price" id="pp">від 1 000 грн</div>
+    <p class="lead" style="margin-top:14px">Для теоретичної роботи на 25 сторінок; кожна наступна сторінка — 25 грн. Практична частина й складність теми можуть змінити вартість.</p><a class="btn btn-p" href="#">Залишити заявку →</a></div>
+    <div class="calc rv d1"><b style="font:800 18px var(--h)">Орієнтовний розрахунок</b>
+      <label>Сторінок: <span id="pg">25</span><input type="range" id="rg" min="25" max="80" value="25"></label>
+      <label>Складність<select style="padding:10px;border-radius:12px;border:1px solid var(--border)"><option>Базовий ×1,0</option></select></label>
+      <div class="res" id="rs">1 000 грн</div></div></div>
+  <div class="tiers pr--tiers hidden">
+    <div class="card tier lift rv"><h3>Теоретична</h3><b>від 1 000 грн</b><p>25 сторінок, без практичної частини.</p></div>
+    <div class="card tier top lift rv d1"><span class="badge">Найчастіше</span><h3>З практикою</h3><b>за розрахунком</b><p>Розрахунки, аналіз даних, таблиці.</p></div>
+    <div class="card tier lift rv d2"><h3>Курсовий проект</h3><b>після завдання</b><p>Записка й креслення — оцінює менеджер.</p></div></div>
+</div></section>
+
+<!-- 4 ARTICLE -->
+<section class="blk" data-sec="art" id="art"><div class="wrap">
+  <h2 class="sec-title rv">Курсова робота <mark>на замовлення</mark></h2>
+  <div class="art art--toc"><nav class="toc rv"><a class="on" href="#a1">Що входить</a><a href="#a2">Від чого залежить ціна</a><a href="#a3">Структура</a><a href="#a4">Що потрібно для замовлення</a></nav>
+    <div class="prose">
+      <section id="a1" class="rv"><h3>Що входить у написання</h3><p>Вступ з актуальністю, об'єктом, предметом, метою й завданнями у форматі вашої кафедри. Теоретичний розділ на джерелах, які можна перевірити. Висновки, список джерел, оформлення за ДСТУ.</p></section>
+      <section id="a2" class="rv"><h3>Від чого залежить ціна</h3><p>Обсяг, складність теми, наявність практичної частини, дедлайн і ваші напрацювання. Точну суму менеджер називає після теми й методички.</p></section>
+      <section id="a3" class="rv"><h3>Структура курсової</h3><p>Титульний аркуш, зміст, вступ, два-три розділи, висновки, список джерел, додатки. Структуру погоджуємо з вами до початку.</p></section>
+      <section id="a4" class="rv"><h3>Що потрібно для замовлення</h3><p>Методичка або вимоги керівника, тема, дата здачі, дані для практичної частини — якщо вони є.</p></section>
+    </div></div>
+  <div class="art-tabs hidden"><div class="tabs"><button aria-pressed="true" data-t="0">Що входить</button><button data-t="1">Ціна</button><button data-t="2">Структура</button><button data-t="3">Що потрібно</button></div>
+    <div class="tp on"><div class="card"><h3>Що входить у написання</h3><p>Вступ, теоретичний розділ, висновки, список джерел, оформлення за ДСТУ.</p></div></div>
+    <div class="tp"><div class="card"><h3>Від чого залежить ціна</h3><p>Обсяг, складність, практична частина, дедлайн.</p></div></div>
+    <div class="tp"><div class="card"><h3>Структура</h3><p>Титул, зміст, вступ, розділи, висновки, джерела, додатки.</p></div></div>
+    <div class="tp"><div class="card"><h3>Що потрібно</h3><p>Методичка, тема, дата здачі, дані для практики.</p></div></div></div>
+  <div class="cols art-cards hidden">
+    <div class="card lift rv"><div class="ic">📚</div><h3>Що входить</h3><p>Вступ, розділи, висновки, джерела, оформлення за ДСТУ.</p></div>
+    <div class="card lift rv d1"><div class="ic">💰</div><h3>Від чого залежить ціна</h3><p>Обсяг, складність теми, практична частина, дедлайн.</p></div>
+    <div class="card lift rv d2"><div class="ic">🧩</div><h3>Структура</h3><p>Титул, зміст, вступ, розділи, висновки, джерела.</p></div>
+    <div class="card lift rv d3"><div class="ic">✅</div><h3>Що потрібно</h3><p>Методичка, тема, дата здачі, дані для практики.</p></div></div>
+</div></section>
+
+<!-- 5 FAQ -->
+<section class="blk" data-sec="faq" id="faq" style="background:var(--neutral)"><div class="wrap">
+  <h2 class="sec-title rv">Поширені <mark>запитання</mark></h2>
+  <div class="faq faq--two" id="faqbox">
+    <div class="col" style="display:grid;gap:12px"><div class="fq rv"><button>Чи можна оплатити частинами?<i>+</i></button><div><p>Так, за схемою 50/50 або повною передоплатою — деталі в Умовах.</p></div></div>
+      <div class="fq rv d1"><button>Ви працюєте за методичкою кафедри?<i>+</i></button><div><p>Так. Методичка кафедри важливіша за типові вимоги.</p></div></div>
+      <div class="fq rv d2"><button>Чи візьметесь за мою тему?<i>+</i></button><div><p>Надішліть тему й вимоги — менеджер підтвердить, чи беремо її в роботу.</p></div></div></div>
+    <div class="col" style="display:grid;gap:12px"><div class="fq rv"><button>Чи зміниться ціна після розрахунку?<i>+</i></button><div><p>Вона може змінитися, якщо змінилися тема, обсяг чи вимоги. Це погоджується окремо.</p></div></div>
+      <div class="fq rv d1"><button>Скільки сторінок буде в роботі?<i>+</i></button><div><p>Скільки потрібно за вашими вимогами. Базовий пакет — 25 сторінок.</p></div></div>
+      <div class="fq rv d2"><button>Чи займаєтеся оформленням?<i>+</i></button><div><p>Так, за ДСТУ або вимогами вашого вишу.</p></div></div></div>
+    <aside class="ask hidden"><h3>Не знайшли відповідь?</h3><p>Напишіть менеджеру — відповімо на питання про вашу роботу.</p><a class="btn btn-p" href="#">Написати в Telegram</a></aside>
+  </div>
+</div></section>
+
+<!-- 6 SUBJECTS -->
+<section class="blk" data-sec="sj" id="sj"><div class="wrap">
+  <h2 class="sec-title rv">Курсові з вашого <mark>предмета</mark></h2>
+  <div class="sj sj--chips rv"><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span></div>
+  <div class="sjm sj--marq hidden"><div class="sjm__r"><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span></div><div class="sjm__r"><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span><span>Історія</span><span>Екологія</span><span>Туризм</span><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span><span>Історія</span><span>Екологія</span><span>Туризм</span></div></div>
+  <div class="sjg sj--grid hidden"><span data-e="📈">Економіка</span><span data-e="⚖️">Право</span><span data-e="🧠">Психологія</span><span data-e="📣">Маркетинг</span><span data-e="👥">Менеджмент</span><span data-e="🧮">Облік і аудит</span><span data-e="🎓">Педагогіка</span><span data-e="💶">Фінанси</span></div>
+</div></section>
+
+<!-- 7 CTA -->
+<section class="blk" data-sec="cta" id="cta"><div class="wrap">
+  <div class="cta cta--y rv" id="ctabox"><div><h2>Дізнайтеся ціну вашої курсової</h2><p>Заповніть коротку заявку з трьох кроків. Орієнтовну ціну побачите одразу.</p></div><a class="btn btn-d" href="#">Залишити заявку →</a></div>
+</div></section>
+<div class="foot">Макет. Тексти — приклад зі сторінки «Курсові роботи»; на сайті для кожної послуги підставляються її власні тексти.</div>
+</main>
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const state={anim:'lively',hero:'a',hl:'cards',price:'calc',art:'toc',faq:'two',sj:'chips',cta:'y',on:{hero:1,hl:1,price:1,art:1,faq:1,sj:1,cta:1}};
+const stage=$('#stage');
+function apply(){
+  document.body.dataset.anim=state.anim;stage.dataset.anim=state.anim;
+  const h=$('#hero');h.className='hero hero--'+state.hero;
+  $('.hero__art').style.display=state.hero==='a'?'':'none';
+  $('.hero__stats').style.display=state.hero==='b'?'':'none';
+  $('.hero__chips').style.display=state.hero==='c'?'':'none';
+  if(state.hero==='c'&&!$('.ring',h))h.insertAdjacentHTML('afterbegin','<div class="ring"></div>');
+  if(state.hero!=='c')$$('.ring',h).forEach(e=>e.remove());
+  ['cards','tl','mq'].forEach(k=>$('.hl--'+k).classList.toggle('hidden',state.hl!==k));
+  ['calc','tiers'].forEach(k=>$('.pr--'+k).classList.toggle('hidden',state.price!==k));
+  ['toc','tabs','cards'].forEach(k=>$('.art-'+k+',.art--'+k)&&$('.art--'+k+',.art-'+k).classList.toggle('hidden',state.art!==k));
+  $('#faqbox').className='faq '+(state.faq==='two'?'faq--two':'faq--side');
+  $('.ask').classList.toggle('hidden',state.faq!=='side');
+  ['chips','marq','grid'].forEach(k=>$('.sj--'+k).classList.toggle('hidden',state.sj!==k));
+  const c=$('#ctabox');c.className='cta rv in cta--'+state.cta;
+  $$('.btn',c).forEach(b=>b.className='btn '+(state.cta==='y'?'btn-d':'btn-p'));
+  Object.keys(state.on).forEach(k=>$('[data-sec='+k+']',stage).classList.toggle('hidden',!state.on[k]));
+  $('#out').value=['Анімації: '+{off:'вимкнено',subtle:'спокійні',lively:'жваві'}[state.anim],
+   ...[['hero','1. Шапка'],['hl','2. Переваги'],['price','3. Вартість'],['art','4. Стаття'],['faq','5. Питання'],['sj','6. Предмети'],['cta','7. Заклик']].map(([k,n])=>n+': '+(state.on[k]?state[k]:'не показувати'))].join('\n');
+  observe();
+}
+$$('.seg').forEach(seg=>seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[seg.dataset.key]=b.dataset.v;$$('button',seg).forEach(x=>x.setAttribute('aria-pressed',x===b));apply()}));
+$$('.sw').forEach(s=>s.addEventListener('click',()=>{const k=s.dataset.sec;state.on[k]=state.on[k]?0:1;s.setAttribute('aria-pressed',!!state.on[k]);apply()}));
+$('#copy').onclick=()=>{$('#out').select();document.execCommand('copy')};
+/* reveal */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+function observe(){$$('.rv:not(.in)',stage).forEach(el=>{if(el.offsetParent!==null)io.observe(el)})}
+/* faq */
+stage.addEventListener('click',e=>{const q=e.target.closest('.fq button');if(q)q.parentElement.classList.toggle('open');
+  const t=e.target.closest('.tabs button');if(t){$$('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x===t));$$('.tp').forEach((p,i)=>p.classList.toggle('on',i==t.dataset.t))}});
+/* калькулятор */
+const rg=$('#rg');rg.oninput=()=>{const n=+rg.value,v=1000+Math.max(0,n-25)*25;$('#pg').textContent=n;$('#rs').textContent=v.toLocaleString('uk-UA')+' грн'};
+/* toc підсвітка */
+const secs=$$('.prose section'),links=$$('.toc a');
+addEventListener('scroll',()=>{let cur=0;secs.forEach((s,i)=>{if(s.getBoundingClientRect().top<200)cur=i});links.forEach((a,i)=>a.classList.toggle('on',i===cur))},{passive:true});
+apply();
+</script>
+</body>
+</html>
