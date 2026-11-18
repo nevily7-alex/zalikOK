@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Конструктор статистики (адмінка) — ЗалікОк</title>
+<style>
+@font-face{font-family:Manrope;src:url('../../src/fonts/Manrope-subset.woff2') format('woff2');font-weight:200 800;font-display:swap}
+@font-face{font-family:'Nunito Sans';src:url('../../src/fonts/NunitoSans-subset.woff2') format('woff2');font-weight:300 900;font-display:swap}
+:root{--bg:#fffefa;--text:#242424;--primary:#ffd43b;--primary-hover:#f2c626;--soft:#fff4cc;--neutral:#f7f5ef;--muted:#64616b;--border:#e8e4da;--surface:#fff;--graphite:#2b2a2e;
+--h:Manrope,system-ui,sans-serif;--b:'Nunito Sans',system-ui,sans-serif;--r:24px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#ece9df;color:var(--text);font:16px/26px var(--b)}
+h1,h2,h3,h4{font-family:var(--h);margin:0;font-weight:800;letter-spacing:-.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+.shell{display:grid;grid-template-columns:340px minmax(0,1fr);min-height:100vh}
+@media(max-width:960px){.shell{grid-template-columns:1fr}.builder{position:static!important;height:auto!important}}
+/* ===== панель конструктора ===== */
+.builder{position:sticky;top:0;height:100vh;overflow:auto;background:#fff;border-right:1px solid var(--border)}
+.builder__in{padding:20px;display:grid;gap:16px}
+.builder h1{font-size:19px;line-height:25px}
+.builder p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:19px}
+.grp{border:1px solid var(--border);border-radius:16px;padding:12px;display:grid;gap:8px}
+.grp__head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.grp__head b{font:800 13px/18px var(--h)}
+.sw{position:relative;width:38px;height:22px;border-radius:99px;border:0;background:#d6d1c3;padding:0;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw[aria-pressed=true]{background:var(--text)}.sw[aria-pressed=true]::after{transform:translateX(16px)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1.5px solid var(--border);background:#fff;border-radius:99px;padding:5px 12px;font-size:13px;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--primary);border-color:var(--text)}
+.out{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:12px;padding:10px;font:12px/18px ui-monospace,Consolas,monospace;background:var(--neutral)}
+.copy{border:0;border-radius:99px;background:var(--text);color:#fff;padding:10px 16px;font-weight:700}
+/* ===== сторінка ===== */
+.stage{min-width:0;background:var(--bg)}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(255,254,250,.9);backdrop-filter:blur(8px);z-index:5}
+.logo{font:800 22px var(--h)}.logo i{font-style:normal;background:var(--primary);padding:0 6px;border-radius:8px;margin-left:2px}
+.nav{display:flex;gap:22px;font-weight:600;font-size:15px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+section.blk{padding:56px 0}
+.crumbs{font-size:14px;color:var(--muted);padding-top:22px;grid-column:1/-1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:14px 26px;font:800 16px var(--h);text-decoration:none;position:relative;overflow:hidden;transition:transform .2s,background .2s}
+.btn-p{background:var(--primary)}.btn-p:hover{background:var(--primary-hover);transform:translateY(-2px)}
+.btn-d{background:var(--text);color:#fff}
+.btn-s{background:#fff;border:1.5px solid var(--text)}
+.sec-title{font-size:clamp(26px,3.4vw,38px);line-height:1.15;margin-bottom:12px}
+.sec-title mark{background:linear-gradient(transparent 62%,var(--primary) 62%);color:inherit}
+.lead{color:var(--muted);max-width:640px;margin:0 0 28px}
+/* анімації */
+[data-anim=off] *{animation:none!important;transition:none!important}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+[data-anim=off] .rv{opacity:1;transform:none}
+[data-anim=lively] .rv{transform:translateY(40px) scale(.97)}
+[data-anim=lively] .rv.in{transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+.lift{transition:transform .25s,box-shadow .25s,background .25s}
+.lift:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgb(36 36 36/.1)}
+[data-anim=subtle] .lift:hover{transform:translateY(-3px)}
+@keyframes float{0%,100%{transform:translateY(0) rotate(var(--rot,0deg))}50%{transform:translateY(-14px) rotate(var(--rot,0deg))}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes marq{to{transform:translateX(-50%)}}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+.btn-p::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:shine 3.4s infinite}
+.hdr{position:static}
+.stage{background:var(--neutral);min-width:0}
+.adm{padding:20px 26px 70px;max-width:1400px;margin:0 auto}
+.adm h2.ttl{font:800 28px var(--h);margin:6px 0 4px}
+.sample{font-size:13px;color:var(--muted);margin:0 0 14px}
+.card{background:#fff;border:1px solid var(--border);border-radius:22px;padding:18px 20px}
+.card h3{font:800 17px var(--h);margin:0 0 4px}
+.card .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+body[data-dens=compact] .card{padding:12px 14px;border-radius:18px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:1000px){.row2,.row3{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px;margin-bottom:14px}
+.periods{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}
+.periods button{border:1.5px solid var(--border);background:#fff;border-radius:99px;padding:6px 16px;font-weight:700;transition:.2s}
+.periods button[aria-pressed=true]{background:var(--text);color:#fff;border-color:var(--text)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.tabs button{border:1.5px solid var(--border);background:#fff;border-radius:99px;padding:8px 18px;font-weight:700}
+.tabs button[aria-pressed=true]{background:var(--primary);border-color:var(--primary)}
+/* KPI */
+.kp{display:grid;gap:12px;margin-bottom:14px}
+.kp--big{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kp--big .t{border-radius:22px;padding:18px 20px}
+.kp--big .t b{font:800 32px/38px var(--h);display:block}
+.kp--row{grid-template-columns:repeat(6,minmax(0,1fr))}
+.kp--row .t{padding:10px 14px;border-radius:16px}.kp--row .t b{font:800 20px var(--h)}
+.kp--spark{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kp--spark .t{border-radius:22px;padding:16px 18px;position:relative;overflow:hidden}
+.kp--spark .t b{font:800 28px/34px var(--h);display:block;position:relative;z-index:1}
+.kp--spark svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:46px;opacity:.55}
+@media(max-width:1000px){.kp--big,.kp--spark{grid-template-columns:repeat(2,minmax(0,1fr))}.kp--row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.t{background:#fff;border:1px solid var(--border)}
+.t small{display:block;color:var(--muted);font-size:13px}
+.t .d{font-size:12px;font-weight:700;color:#176b46}
+.t.y{background:var(--primary);border-color:var(--primary)}.t.y small{color:var(--text)}
+.t.g{background:#ecf8f1;border-color:#ecf8f1}.t.o{background:#fff0d6;border-color:#fff0d6}.t.d2{background:var(--graphite);border-color:var(--graphite);color:#fff}.t.d2 small{color:#d1cec5}.t.d2 b{color:var(--primary)}
+/* статуси */
+.dn{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.dn svg{width:170px;height:170px;transform:rotate(-90deg);flex:none}
+.dn circle{fill:none;stroke-width:26;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1),stroke-dasharray .9s}
+.lg{display:grid;gap:6px;flex:1;min-width:150px}
+.lg div{display:flex;align-items:center;gap:8px;font-size:14px}
+.lg--row{display:flex;flex-wrap:wrap;gap:6px 24px}.lg--row b{margin-left:6px}
+.lg i{width:12px;height:12px;border-radius:4px;flex:none}.lg b{margin-left:auto}
+.stk{display:flex;height:34px;border-radius:12px;overflow:hidden;margin:10px 0 12px;background:var(--neutral)}
+.stk div{height:100%;display:grid;place-items:center;font:800 13px var(--h);color:#fff;transition:flex .9s;min-width:0;overflow:hidden}
+.pt{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.pt{grid-template-columns:repeat(2,1fr)}}
+.pt div{border-radius:18px;padding:14px;position:relative;overflow:hidden}
+.pt b{font:800 28px var(--h);display:block}.pt small{font-weight:700;font-size:13px}.pt em{position:absolute;right:12px;top:12px;font:800 13px var(--h);font-style:normal;opacity:.7}
+.c-new{--c:#2a7de1}.c-work{--c:#f2b705}.c-done{--c:#2fb67a}.c-failed{--c:#e5484d}
+.pt .c-new{background:#e0efff}.pt .c-work{background:var(--soft)}.pt .c-done{background:#ecf8f1}.pt .c-failed{background:#fef3f2}
+/* гроші */
+.bars{display:flex;align-items:flex-end;gap:8px;height:190px;padding-top:10px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;position:relative}
+.bars .b i{display:block;width:100%;max-width:38px;border-radius:10px 10px 4px 4px;background:var(--primary);height:0;transition:height .9s cubic-bezier(.2,.8,.2,1)}
+.bars .b:hover i{background:var(--text)}
+.bars .b span{font-size:11px;color:var(--muted)}
+.bars .b em{position:absolute;top:-4px;font:800 11px var(--h);font-style:normal;opacity:0;transition:.2s;background:var(--text);color:#fff;border-radius:8px;padding:2px 6px;white-space:nowrap}
+.bars .b:hover em{opacity:1}
+.line svg{width:100%;height:200px}
+.line .ar{fill:rgba(255,212,59,.35)}.line .ln{fill:none;stroke:#2b2a2e;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}.line .dt{fill:var(--primary);stroke:#2b2a2e;stroke-width:2.5}
+.line .ax{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+/* види */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 10px;font:800 13px var(--h);color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:0}
+.mb{display:block;height:8px;border-radius:99px;background:rgba(36,36,36,.08);overflow:hidden;min-width:90px}
+.mb i{display:block;height:100%;background:var(--primary);border-radius:99px;width:0;transition:width .9s}
+.rank{display:grid;gap:10px}
+.rank div{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;font-size:14px}
+.rank .mb{height:16px}
+.rank .mb i{background:linear-gradient(90deg,var(--primary),#ffb400)}
+.rank b{font-family:var(--h)}
+/* увага / воронка */
+.alert{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.alert li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--neutral);flex-wrap:wrap}
+.alert li b{font-family:var(--h)}.alert li span:last-child{margin-left:auto}
+.chip{font-size:12px;font-weight:800;padding:2px 10px;border-radius:99px}
+.chip--bad{background:#fef3f2;color:#b42318}.chip--soon{background:var(--soft);color:#8a5a00}.chip--pay{background:#fff0d6;color:#a15c00}
+.fn{display:grid;gap:8px}
+.fn div{height:38px;border-radius:12px;display:flex;align-items:center;padding:0 14px;font-weight:700;color:#fff;transition:width .9s cubic-bezier(.2,.8,.2,1);width:0;white-space:nowrap}
+.fn b{margin-left:auto;font-family:var(--h)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+[data-anim=subtle] .card,[data-anim=subtle] .t{animation:up .5s both}
+[data-anim=lively] .card,[data-anim=lively] .t{animation:up .65s both}
+[data-anim=off] *{animation:none!important;transition:none!important}
+.foot2{padding:26px;text-align:center;color:var(--muted);font-size:14px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body data-anim="subtle" data-dens="comfy">
+<div class="shell">
+<aside class="builder"><div class="builder__in">
+  <div><h1>Конструктор статистики</h1><p>Так може виглядати розділ «Статистика» в адмінці. Дані — приклад. Перемикайте варіанти зліва; кнопки періоду й вкладки теж працюють.</p></div>
+  <div class="grp"><div class="grp__head"><b>Компонування</b></div>
+    <div class="seg" data-key="layout"><button data-v="grid" aria-pressed="true">Дашборд: сітка карток</button><button data-v="col">Одна колонка секцій</button><button data-v="tabs">Вкладки: Огляд / Гроші / Види робіт</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Перемикач періоду (7 днів / місяць / рік / весь час)</b></div>
+    <div class="seg" data-key="period"><button data-v="yes" aria-pressed="true">Показувати</button><button data-v="no">Ні, лише весь час</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Верхні показники</b></div>
+    <div class="seg" data-key="kpi"><button data-v="big" aria-pressed="true">Великі кольорові плитки</button><button data-v="spark">Плитки з міні-графіком</button><button data-v="row">Компактний рядок</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Заявки за статусами</b></div>
+    <div class="seg" data-key="status"><button data-v="donut" aria-pressed="true">Кільцева діаграма</button><button data-v="stack">Горизонтальна смуга</button><button data-v="tiles">Плитки з відсотками</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Заробіток за місяцями</b></div>
+    <div class="seg" data-key="money"><button data-v="bars" aria-pressed="true">Стовпчики</button><button data-v="line">Лінія з областю</button><button data-v="none">Не показувати</button></div></div>
+  <div class="grp"><div class="grp__head"><b>За видами робіт</b></div>
+    <div class="seg" data-key="types"><button data-v="table" aria-pressed="true">Таблиця з міні-смугами</button><button data-v="rank">Рейтинг горизонтальними смугами</button><button data-v="donut">Кругова: частки заробітку</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Блок «Потребує уваги»</b> <span class="sub">прострочені, дедлайн ≤ 3 дні, неоплачені залишки</span></div>
+    <div class="seg" data-key="attn"><button data-v="yes" aria-pressed="true">Показувати</button><button data-v="no">Ні</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Воронка (нові → в роботі → виконані) і успішність</b></div>
+    <div class="seg" data-key="funnel"><button data-v="yes" aria-pressed="true">Показувати</button><button data-v="no">Ні</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Щільність</b></div>
+    <div class="seg" data-key="dens"><button data-v="comfy" aria-pressed="true">Просторо</button><button data-v="compact">Компактно</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Анімації (числа «набігають», смуги ростуть)</b></div>
+    <div class="seg" data-key="anim"><button data-v="off">Вимкнено</button><button data-v="subtle" aria-pressed="true">Спокійні</button><button data-v="lively">Жваві</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Мій вибір (скопіюйте й надішліть)</b></div>
+    <textarea class="out" id="out" readonly></textarea><button class="copy" id="copy">Скопіювати</button></div>
+</div></aside>
+
+<main class="stage"><div class="hdr"><div class="logo">Залік<i>Ок</i> <span style="font:700 14px var(--b);color:var(--muted)">· Заявки</span></div><nav class="nav"><span>Заявки</span><span style="border-bottom:3px solid var(--primary)">Статистика</span><span style="color:var(--muted)">admin@admin.local</span></nav></div>
+<div class="adm"><h2 class="ttl">Статистика</h2><p class="sample">Приклад даних.</p>
+  <div id="periods"></div><div id="view"></div></div>
+<div class="foot2">Макет. На сайті дані беруться з реальних заявок.</div>
+</main>
+</div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const money=n=>Math.round(n).toLocaleString('uk-UA').replace(/ /g,' ')+' грн';
+const BASE={st:{new:6,work:14,done:62,failed:9},earned:187400,exp:38500,pre:12400,topay:26100,
+ months:[8200,9500,11000,10400,13800,15200,12100,16900,18400,21300,24700,26000],
+ mnames:['Дек','Січ','Лют','Бер','Кві','Тра','Чер','Лип','Сер','Вер','Жов','Лис'],
+ types:[['Курсова робота',31,62000],['Дипломна робота',12,54000],['Магістерська робота',4,28000],['Реферат',22,8800],['Звіт з практики',9,8100],['Контрольна робота',18,5400],['Презентація',6,3000],['Інше',9,18100]]};
+const F={all:1,year:.85,month:.15,week:.05};
+const PN={all:'Весь час',year:'Рік',month:'Місяць',week:'7 днів'};
+const state={layout:'grid',period:'yes',kpi:'big',status:'donut',money:'bars',types:'table',attn:'yes',funnel:'yes',dens:'comfy',anim:'subtle'};
+let per='all',tab='ov';
+const data=()=>{const f=F[per];const st=Object.fromEntries(Object.entries(BASE.st).map(([k,v])=>[k,Math.max(per==='all'?v:1,Math.round(v*f))]));
+ const done=st.done,earned=BASE.earned*f;return {st,earned,avg:earned/Math.max(1,done),exp:BASE.exp,pre:BASE.pre,topay:BASE.topay,months:BASE.months,types:BASE.types.map(([n,c,m])=>[n,Math.max(1,Math.round(c*f)),m*f])}};
+const COL={new:'#2a7de1',work:'#f2b705',done:'#2fb67a',failed:'#e5484d'};
+const LBL={new:'Нові',work:'В роботі',done:'Виконані',failed:'Провалені'};
+const spark=(c)=>{const m=BASE.months,max=Math.max(...m);const pts=m.map((v,i)=>`${i*100/(m.length-1)},${46-(v/max)*40}`).join(' ');return `<svg viewBox="0 0 100 46" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>`};
+function kpis(d){
+  const succ=Math.round(d.st.done/(d.st.done+d.st.failed)*100);
+  const T=[['y','Загальний заробіток',money(d.earned),'сума виконаних','#2b2a2e'],['g','Середній чек',money(d.avg),'за виконаними','#2fb67a'],['o','Очікується (в роботі)',money(d.exp),'сума заявок у роботі','#f2a515'],['d2','Залишок до сплати',money(d.topay),'за заявками в роботі','#ffd43b']];
+  if(state.kpi==='row'){const R=[['Усього заявок',d.st.new+d.st.work+d.st.done+d.st.failed],['Успішність',succ+'%'],['Заробіток',money(d.earned)],['Середній чек',money(d.avg)],['Очікується',money(d.exp)],['Залишок',money(d.topay)]];return `<div class="kp kp--row">${R.map(([k,v])=>`<div class="t"><small>${k}</small><b data-cnt="${v}">${v}</b></div>`).join('')}</div>`}
+  return `<div class="kp kp--${state.kpi}">${T.map(([c,k,v,h,sc],i)=>`<div class="t ${c}"><small>${k}</small><b data-cnt="${v}">${v}</b><small>${h}</small>${state.kpi==='spark'?spark(sc):''}</div>`).join('')}</div>`;
+}
+function statusV(d){
+  const tot=d.st.new+d.st.work+d.st.done+d.st.failed;
+  if(state.status==='donut'){const C=2*Math.PI*58;let off=0;const segs=Object.keys(d.st).map(k=>{const len=d.st[k]/tot*C;const s=`<circle cx="85" cy="85" r="58" stroke="${COL[k]}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"/>`;off+=len;return s}).join('');
+    return `<div class="dn"><svg viewBox="0 0 170 170"><circle cx="85" cy="85" r="58" stroke="#f1eee5"/>${segs}</svg><div class="lg">${Object.keys(d.st).map(k=>`<div><i style="background:${COL[k]}"></i>${LBL[k]}<b>${d.st[k]} · ${Math.round(d.st[k]/tot*100)}%</b></div>`).join('')}<div style="border-top:1px solid var(--border);padding-top:6px"><b style="margin:0">Усього</b><b>${tot}</b></div></div></div>`}
+  if(state.status==='stack')return `<div class="stk">${Object.keys(d.st).map(k=>`<div style="flex:${d.st[k]};background:${COL[k]}" title="${LBL[k]}">${d.st[k]}</div>`).join('')}</div><div class="lg lg--row">${Object.keys(d.st).map(k=>`<div><i style="background:${COL[k]}"></i>${LBL[k]}<b>${Math.round(d.st[k]/tot*100)}%</b></div>`).join('')}</div>`;
+  return `<div class="pt">${Object.keys(d.st).map(k=>`<div class="c-${k}"><em>${Math.round(d.st[k]/tot*100)}%</em><small>${LBL[k]}</small><b data-cnt="${d.st[k]}">${d.st[k]}</b></div>`).join('')}</div>`;
+}
+function moneyV(d){
+  if(state.money==='none')return '';
+  const m=d.months,max=Math.max(...m);
+  if(state.money==='bars')return `<section class="card"><h3>Заробіток за місяцями</h3><p class="sub">Виконані заявки, сума вартості</p><div class="bars">${m.map((v,i)=>`<div class="b"><em>${money(v)}</em><i data-h="${Math.round(v/max*100)}"></i><span>${BASE.mnames[i]}</span></div>`).join('')}</div></section>`;
+  const W=600,H=180,pts=m.map((v,i)=>[i*(W/(m.length-1)),H-10-(v/max)*(H-30)]);
+  return `<section class="card"><h3>Заробіток за місяцями</h3><p class="sub">Виконані заявки, сума вартості</p><div class="line"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path class="ar" d="M0,${H} L${pts.map(p=>p.join(',')).join(' L')} L${W},${H} Z"/><polyline class="ln" points="${pts.map(p=>p.join(',')).join(' ')}"/>${pts.map(p=>`<circle class="dt" cx="${p[0]}" cy="${p[1]}" r="5"/>`).join('')}</svg><div class="ax">${BASE.mnames.map(n=>`<span>${n}</span>`).join('')}</div></div></section>`;
+}
+function typesV(d){
+  const max=Math.max(...d.types.map(t=>t[2])),sum=d.types.reduce((a,t)=>a+t[2],0);
+  let body='';
+  if(state.types==='table')body=`<table><thead><tr><th>Вид роботи</th><th>Заявок</th><th>Заробіток</th><th style="width:30%">Частка</th></tr></thead><tbody>${d.types.map(([n,c,m])=>`<tr><td>${n}</td><td>${c}</td><td><b>${money(m)}</b></td><td><span class="mb"><i data-w="${Math.round(m/max*100)}"></i></span></td></tr>`).join('')}</tbody></table>`;
+  if(state.types==='rank')body=`<div class="rank">${d.types.map(([n,c,m])=>`<div><span>${n} <small style="color:var(--muted)">· ${c}</small></span><span class="mb"><i data-w="${Math.round(m/max*100)}"></i></span><b>${money(m)}</b></div>`).join('')}</div>`;
+  if(state.types==='donut'){const pal=['#ffd43b','#2b2a2e','#2fb67a','#2a7de1','#e5484d','#a78bfa','#f59e0b','#94a3b8'];const C=2*Math.PI*58;let off=0;const segs=d.types.map(([n,c,m],i)=>{const len=m/sum*C;const s=`<circle cx="85" cy="85" r="58" stroke="${pal[i]}" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}"/>`;off+=len;return s}).join('');body=`<div class="dn"><svg viewBox="0 0 170 170"><circle cx="85" cy="85" r="58" stroke="#f1eee5"/>${segs}</svg><div class="lg">${d.types.map(([n,c,m],i)=>`<div><i style="background:${pal[i]}"></i>${n}<b>${Math.round(m/sum*100)}%</b></div>`).join('')}</div></div>`}
+  return `<section class="card"><h3>За видами робіт</h3><p class="sub">Кількість заявок і заробіток</p>${body}</section>`;
+}
+const attn=()=>state.attn==='no'?'':`<section class="card"><h3>⚠ Потребує уваги</h3><p class="sub">Прострочені, дедлайн найближчі 3 дні, неоплачені залишки</p><ul class="alert"><li><b>№ 000005</b> Контрольна робота<span class="chip chip--bad">прострочено 1 дн.</span><span>300 грн</span></li><li><b>№ 000006</b> Реферат<span class="chip chip--soon">через 2 дн.</span><span>залишок 0 грн</span></li><li><b>№ 000007</b> Дипломна робота<span class="chip chip--soon">через 3 дн.</span><span>залишок 3 000 грн</span></li><li><b>№ 000004</b> Курсова робота<span class="chip chip--pay">залишок 1 500 грн</span><span>дедлайн через 12 дн.</span></li></ul></section>`;
+function funnel(d){
+  if(state.funnel==='no')return '';
+  const a=d.st.new+d.st.work+d.st.done+d.st.failed,b=d.st.work+d.st.done+d.st.failed,c=d.st.done;const succ=Math.round(d.st.done/(d.st.done+d.st.failed)*100);
+  const rows=[['Усі заявки',a,'#2a7de1',100],['Взяті в роботу',b,'#f2b705',Math.round(b/a*100)],['Успішно виконані',c,'#2fb67a',Math.round(c/a*100)]];
+  return `<section class="card"><h3>Воронка заявок</h3><p class="sub">Успішність: <b>${succ}%</b> (виконані / виконані + провалені)</p><div class="fn">${rows.map(([n,v,col,w])=>`<div style="background:${col};--w:${w}%" data-fw="${w}">${n}<b>${v}</b></div>`).join('')}</div></section>`;
+}
+function render(){
+  document.body.dataset.anim=state.anim;document.body.dataset.dens=state.dens;
+  $('#periods').innerHTML=state.period==='yes'?`<div class="periods">${Object.keys(PN).map(k=>`<button data-per="${k}" aria-pressed="${per===k}">${PN[k]}</button>`).join('')}</div>`:'';
+  const d=data(),stSec=`<section class="card"><h3>Заявки за статусами</h3><p class="sub">Скільки заявок у кожному статусі</p>${statusV(d)}</section>`;
+  let html=kpis(d);
+  if(state.layout==='grid')html+=`<div class="row2 stack">${stSec}${funnel(d)||attn()}</div>${funnel(d)&&attn()?`<div class="stack">${attn()}</div>`:''}<div class="stack">${moneyV(d)}</div><div class="stack">${typesV(d)}</div>`;
+  if(state.layout==='col')html+=`<div class="stack">${stSec}${funnel(d)}${moneyV(d)}${typesV(d)}${attn()}</div>`;
+  if(state.layout==='tabs'){html+=`<div class="tabs">${[['ov','Огляд'],['mn','Гроші'],['tp','Види робіт']].map(([k,l])=>`<button data-tab="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div>`;
+    html+=tab==='ov'?`<div class="row2 stack">${stSec}${funnel(d)}</div><div class="stack">${attn()}</div>`:tab==='mn'?`<div class="stack">${moneyV(d)||'<section class="card"><p class="sub">Блок вимкнено в налаштуваннях.</p></section>'}</div>`:`<div class="stack">${typesV(d)}</div>`}
+  $('#view').innerHTML=html;
+  // анімації: числа, смуги, стовпчики
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    $$('[data-w]').forEach(e=>e.style.width=e.dataset.w+'%');$$('[data-h]').forEach(e=>e.style.height=e.dataset.h+'%');$$('[data-fw]').forEach(e=>e.style.width=e.dataset.fw+'%');
+    if(state.anim!=='off')$$('[data-cnt]').forEach(e=>{const raw=e.dataset.cnt;const n=parseFloat(raw.replace(/\s/g,'').replace('%',''));if(!isFinite(n)||/[a-zа-я]/i.test(raw.replace(/грн/g,'')))return;const unit=raw.includes('грн')?' грн':raw.includes('%')?'%':'';const dur=state.anim==='lively'?1100:700;const t0=performance.now();const tick=t=>{const p=Math.min(1,(t-t0)/dur),v=n*(1-Math.pow(1-p,3));e.textContent=Math.round(v).toLocaleString('uk-UA').replace(/ /g,' ')+unit;if(p<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)});
+  }));
+  $('#out').value=['Компонування: '+{grid:'дашборд-сітка',col:'одна колонка',tabs:'вкладки'}[state.layout],'Перемикач періоду: '+(state.period==='yes'?'так':'ні'),'Верхні показники: '+{big:'великі кольорові плитки',spark:'плитки з міні-графіком',row:'компактний рядок'}[state.kpi],'Статуси: '+{donut:'кільцева діаграма',stack:'горизонтальна смуга',tiles:'плитки з відсотками'}[state.status],'Заробіток за місяцями: '+{bars:'стовпчики',line:'лінія з областю',none:'не показувати'}[state.money],'Види робіт: '+{table:'таблиця з міні-смугами',rank:'рейтинг смугами',donut:'кругова діаграма'}[state.types],'Потребує уваги: '+(state.attn==='yes'?'так':'ні'),'Воронка: '+(state.funnel==='yes'?'так':'ні'),'Щільність: '+(state.dens==='comfy'?'просторо':'компактно'),'Анімації: '+{off:'вимкнено',subtle:'спокійні',lively:'жваві'}[state.anim]].join('\n');
+}
+$$('.seg').forEach(seg=>seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[seg.dataset.key]=b.dataset.v;if(seg.dataset.key==='period'&&b.dataset.v==='no')per='all';$$('button',seg).forEach(x=>x.setAttribute('aria-pressed',x===b));render()}));
+document.addEventListener('click',e=>{const p=e.target.closest('[data-per]');if(p){per=p.dataset.per;render();return}const t=e.target.closest('[data-tab]');if(t){tab=t.dataset.tab;render()}});
+$('#copy').onclick=()=>{$('#out').select();document.execCommand('copy')};
+render();
+</script>
+</body>
+</html>
