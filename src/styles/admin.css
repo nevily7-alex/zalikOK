@@ -227,9 +227,9 @@
 .admin-copy { position: relative; z-index: 2; border: 0; background: var(--color-neutral); border-radius: 8px; width: 24px; height: 24px; font-size: 12px; cursor: pointer; opacity: 0; transition: opacity 0.2s, background 0.2s; }
 .admin-rowcard:hover .admin-copy, .admin-copy:focus-visible { opacity: 1; }
 .admin-copy:hover { background: var(--color-primary); }
-.admin-dl { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 9px; border-radius: 999px; background: var(--color-neutral); }
-.admin-dl--soon { background: var(--color-soft-yellow); }
-.admin-dl--bad { background: var(--color-error-bg); color: var(--color-error); }
+.admin-chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 9px; border-radius: 999px; background: var(--color-neutral); }
+.admin-chip--soon { background: var(--color-soft-yellow); }
+.admin-chip--bad { background: var(--color-error-bg); color: var(--color-error); }
 .admin-rowcard__price { display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 6px; padding: 10px 20px; min-width: 230px; background: linear-gradient(90deg, transparent, rgb(255 212 59 / 0.18)); }
 .admin-price { display: inline-block; background: var(--color-primary); padding: 5px 14px; border-radius: 14px; font-family: var(--font-heading); font-weight: 800; font-size: 18px; white-space: nowrap; }
 .admin-price--none { background: none; padding: 0; font-size: 14px; color: var(--color-muted); }
@@ -249,4 +249,82 @@
   @keyframes admin-fill { from { width: 0; } }
   .admin-rowcard { animation: admin-up 0.45s both; animation-delay: calc(var(--i, 0) * 45ms); }
   .admin-pay__bar i { animation: admin-fill 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 45ms + 150ms); }
+}
+
+/* ---------- Картка заявки: дашборд (шапка з кроками, плитки, кільце, дедлайн, часова лінія) ---------- */
+.rq-hero { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: 24px; padding: 18px 22px; display: grid; gap: 10px; margin-bottom: 14px; }
+.rq-hero__top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.rq-hero__title { font-family: var(--font-heading); font-size: 28px; line-height: 34px; font-weight: 800; margin: 0; }
+.rq-hero__price { margin-left: auto; text-align: right; display: grid; gap: 4px; justify-items: end; }
+.rq-hero__price small { color: var(--color-muted); font-size: 13px; }
+.rq-hero__meta { margin: 0; color: var(--color-muted); font-size: 14px; }
+.rq-steps { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-wrap: wrap; }
+.rq-step { flex: 1; min-width: 96px; position: relative; text-align: center; }
+.rq-step::before { content: ''; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: var(--color-border); z-index: 0; }
+.rq-step:first-child::before { display: none; }
+.rq-step--done::before { background: var(--color-primary); }
+.rq-step form { display: block; }
+.rq-step button { position: relative; z-index: 1; width: 100%; border: 0; background: none; padding: 0 4px; cursor: pointer; font: inherit; color: inherit; }
+.rq-step i { display: grid; place-items: center; width: 32px; height: 32px; margin: 0 auto 4px; border-radius: 50%; background: var(--color-bg); border: 3px solid var(--color-border); font: 800 13px var(--font-heading); font-style: normal; transition: transform 0.25s, background 0.25s, border-color 0.25s; }
+.rq-step span { font-size: 12px; font-weight: 700; color: var(--color-muted); }
+.rq-step button:hover i { border-color: var(--color-text); }
+.rq-step--done i { background: var(--color-primary); border-color: var(--color-primary); }
+.rq-step--cur i { background: var(--color-text); border-color: var(--color-text); color: #fff; transform: scale(1.15); }
+.rq-step--cur span { color: var(--color-text); }
+.rq-step--fail i { background: #e5484d; border-color: #e5484d; color: #fff; }
+.rq-tiles { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rq-tile { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: 20px; border: 1px solid var(--color-border); background: var(--color-bg); }
+.rq-tile span { color: var(--color-muted); font-size: 13px; }
+.rq-tile strong { font-family: var(--font-heading); font-size: 24px; line-height: 30px; }
+.rq-tile--price { background: var(--color-primary); border-color: var(--color-primary); }
+.rq-tile--price span { color: var(--color-text); }
+.rq-tile--paid { background: #ecf8f1; border-color: #ecf8f1; }
+.rq-tile--left { background: #fff0d6; border-color: #fff0d6; }
+.rq-tile--due.rq-cd--soon strong { color: #b27300; }
+.rq-tile--due.rq-cd--bad strong { color: var(--color-error); }
+@media (max-width: 900px) { .rq-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.admin-card h2 { display: flex; align-items: center; gap: 8px; }
+.rq-client { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.rq-client__av { width: 52px; height: 52px; border-radius: 50%; background: var(--color-primary); display: grid; place-items: center; font: 800 22px var(--font-heading); flex: none; }
+.rq-client small { color: var(--color-muted); }
+.rq-client__v { font: 800 18px var(--font-heading); overflow-wrap: anywhere; }
+.rq-client__act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rq-outcome { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 12px; }
+.rq-outcome form { display: contents; }
+.rq-outcome .btn { padding: 14px 10px; font-size: 16px; justify-content: center; }
+.rq-outcome__ok { background: #2fb67a; color: #fff; }
+.rq-outcome__ok:hover:not(:disabled) { background: #279a67; }
+.rq-outcome__bad { background: var(--color-bg); color: var(--color-error); border: 1.5px solid #e5484d; }
+.rq-outcome__bad:hover:not(:disabled) { background: var(--color-error-bg); }
+.rq-outcome .btn:disabled { opacity: 0.45; cursor: default; }
+.rq-pay { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin-bottom: 12px; }
+.rq-ring { width: 120px; height: 120px; position: relative; }
+.rq-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.rq-ring__bg { stroke: rgb(36 36 36 / 0.1); }
+.rq-ring__fg { stroke: #2fb67a; stroke-linecap: round; stroke-dashoffset: var(--off); }
+.rq-ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 800 24px var(--font-heading); }
+.rq-cd { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
+.rq-cd__n { font: 800 54px/1 var(--font-heading); text-align: center; }
+.rq-cd__n small { display: block; font: 700 13px var(--font-body); color: var(--color-muted); margin-top: 2px; }
+.rq-cd--soon .rq-cd__n { color: #b27300; }
+.rq-cd--bad .rq-cd__n { color: var(--color-error); }
+.rq-cd__who { color: var(--color-muted); }
+.rq-cd__bar { height: 10px; border-radius: 999px; background: rgb(36 36 36 / 0.1); overflow: hidden; margin: 6px 0; }
+.rq-cd__bar i { display: block; height: 100%; width: var(--w); background: var(--color-primary); border-radius: 999px; }
+.rq-cd--bad .rq-cd__bar i { background: #e5484d; }
+.rq-timeline { list-style: none; padding: 0; margin: 0; position: relative; display: grid; }
+.rq-timeline::before { content: ''; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--color-border); }
+.rq-timeline li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; padding: 5px 0; position: relative; }
+.rq-timeline i { width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); display: grid; place-items: center; font-size: 12px; font-style: normal; position: relative; z-index: 1; border: 3px solid var(--color-bg); }
+.rq-timeline small { display: block; color: var(--color-muted); font-size: 12px; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rq-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes rq-ring { from { stroke-dashoffset: var(--full); } }
+  @keyframes rq-fill { from { width: 0; } }
+  .rq-hero, .rq-tile, .admin-card { animation: rq-up 0.5s both; }
+  .rq-tile:nth-child(2) { animation-delay: 0.05s; }
+  .rq-tile:nth-child(3) { animation-delay: 0.1s; }
+  .rq-tile:nth-child(4) { animation-delay: 0.15s; }
+  .rq-ring__fg { animation: rq-ring 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
+  .rq-cd__bar i { animation: rq-fill 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
 }

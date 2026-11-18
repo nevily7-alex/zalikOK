@@ -61,6 +61,9 @@ test.describe('адмінка: заявки, оплата, дедлайн, ст�
     await page.fill('#prepayment', '500');
     await page.getByRole('button', { name: 'Зберегти передоплату' }).click();
     await expect(page.locator('.admin-money__left dd')).toHaveText('1 500 грн');
+    await expect(page.locator('.rq-tile--left strong')).toHaveText('1 500 грн');
+    await expect(page.locator('.rq-ring b')).toHaveText('25%');
+    await expect(page.getByRole('list', { name: 'Статус заявки' }).getByRole('button')).toHaveCount(5);
 
     // дедлайн виконання + пріоритет
     const due = kyivDatePlus(10);
@@ -75,6 +78,12 @@ test.describe('адмінка: заявки, оплата, дедлайн, ст�
     expect(saved.due).toBe(due);
     expect(saved.priority).toBe(2);
     expect(saved.prepayment).toBe('500.00');
+
+    // крок статусу в шапці: клік ставить статус «У роботі»
+    await page.getByRole('list', { name: 'Статус заявки' }).getByRole('button', { name: /У роботі/ }).click();
+    await expect(page.getByText('Поточний статус:')).toContainText('У роботі');
+    const [stepped] = await sql<{ status: string }>('select status from "Request" where id = $1', [requestId]);
+    expect(stepped.status).toBe('in_progress');
 
     // успішно виконано
     await page.getByRole('button', { name: '✅ Успішно виконано' }).click();

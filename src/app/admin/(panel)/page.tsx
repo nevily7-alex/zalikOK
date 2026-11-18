@@ -192,7 +192,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
           const due = r.dueDate ?? r.deadline;
           const days = Math.round((Date.parse(`${due.toISOString().slice(0, 10)}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
           const chip = days < 0 ? `прострочено ${-days} дн.` : days === 0 ? 'сьогодні' : `через ${days} дн.`;
-          const chipClass = days < 0 ? 'admin-dl--bad' : days <= 3 ? 'admin-dl--soon' : '';
+          const chipClass = days < 0 ? 'admin-chip--bad' : days <= 3 ? 'admin-chip--soon' : '';
           const work = findPrice(r.workType)?.title;
           const group =
             r.status === 'new' ? 'new' : r.status === 'done' || r.status === 'closed' ? 'done' : r.status === 'failed' || r.status === 'cancelled' ? 'failed' : 'work';
@@ -228,7 +228,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
                   </span>
                   <span className="admin-rowcard__dl">
                     {dmy(due)}
-                    {active && <span className={`admin-dl ${chipClass}`}>{chip}</span>}
+                    {active && <span className={`admin-chip ${chipClass}`}>{chip}</span>}
                     <small>{r.dueDate ? 'дедлайн виконання' : 'дедлайн клієнта'}</small>
                   </span>
                 </div>
