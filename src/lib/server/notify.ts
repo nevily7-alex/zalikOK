@@ -42,7 +42,36 @@ export interface NotifyRequest {
  * Текст сповіщення (Telegram, parse_mode=HTML). Контакт у <code> копіюється одним дотиком,
  * поруч посилання «написати». Тему роботи й коментар не додаємо: вони лише в адмін-панелі.
  */
+export interface RequestButton {
+  text: string;
+  url: string;
+}
+
+/** Telegram відхиляє кнопки з localhost/не-https, тож у розробці лишається текстове посилання. */
+function isPublicHttps(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' && !/^(localhost|127\.|\[::1\])/i.test(u.hostname) && !u.hostname.endsWith('.local');
+  } catch {
+    return false;
+  }
+}
+
+const adminUrl = (r: NotifyRequest) => `${appUrl()}/admin/requests/${r.id}`;
+
+/** Кнопки під повідомленням: відкрити заявку в адмінці; написати клієнту в Telegram (e-mail у кнопку не вставити: лише http/https/tg). */
+export function buildRequestButtons(r: NotifyRequest): RequestButton[][] {
+  const rows: RequestButton[][] = [];
+  if (isPublicHttps(adminUrl(r))) rows.push([{ text: '🔗 Відкрити заявку в адмінці', url: adminUrl(r) }]);
+  if (r.contactMethod === 'telegram') {
+    const user = r.contact.trim().replace(/^@/, '');
+    rows.push([{ text: '✈️ Написати клієнту в Telegram', url: `https://t.me/${encodeURIComponent(user)}` }]);
+  }
+  return rows;
+}
+
 export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): string {
+  const hasAdminButton = isPublicHttps(adminUrl(r));
   const service = SERVICE_LABELS[r.service as Service] ?? r.service;
   const work = findPrice(r.workType)?.title;
   const discipline = r.disciplineOther?.trim() || DISCIPLINE_LABELS[r.discipline as Discipline] || r.discipline;
@@ -56,7 +85,7 @@ export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): s
   let contactLines: string[];
   if (method === 'telegram') {
     const user = c.replace(/^@/, '');
-    contactLines = [`✈️ <b>Telegram:</b> <code>@${esc(user)}</code>`, `👉 <a href="https://t.me/${encodeURIComponent(user)}">Написати в Telegram</a>`];
+    contactLines = [`✈️ <b>Telegram:</b> <code>@${esc(user)}</code>`];
   } else if (method === 'email') {
     contactLines = [`✉️ <b>E-mail:</b> <code>${esc(c)}</code>`, `👉 <a href="mailto:${esc(c)}">Написати листа</a>`];
   } else {
@@ -74,17 +103,19 @@ export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): s
     '',
     '👤 <b>Контакт клієнта</b>',
     ...contactLines,
-    '',
-    `🔗 <a href="${esc(appUrl())}/admin/requests/${esc(r.id)}">Відкрити заявку в адмінці</a>`,
+    ...(hasAdminButton ? [] : ['', `🔗 <a href="${esc(adminUrl(r))}">Відкрити заявку в адмінці</a>`]),
   ].join('\n');
 }
 
-async function sendTelegram(text: string): Promise<string> {
+async function sendTelegram(text: string, buttons: RequestButton[][] = []): Promise<string> {
   const token = env('TELEGRAM_BOT_TOKEN')!;
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: env('TELEGRAM_MANAGER_CHAT_ID'), text, parse_mode: 'HTML', disable_web_page_preview: true }),
+    body: JSON.stringify({ chat_id: env('TELEGRAM_MANAGER_CHAT_ID'), text, parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      ...(buttons.length ? { reply_markup: { inline_keyboard: buttons } } : {}),
+    }),
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`Telegram HTTP ${res.status}`);
@@ -126,7 +157,7 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
     const text = buildRequestMessage(item.request);
 
     try {
-      const providerMessageId = await sendTelegram(text);
+      const providerMessageId = await sendTelegram(text, buildRequestButtons(item.request));
       await prisma.notificationOutbox.update({
         where: { id: item.id },
         data: { status: 'sent', providerMessageId, lastError: null },
