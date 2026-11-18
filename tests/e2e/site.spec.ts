@@ -7,7 +7,7 @@ test.describe('головна', () => {
     page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto('/');
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('h1')).toHaveText('Курсова без зайвого стресу');
+    await expect(page.locator('h1')).toHaveText('Студентські роботи без зайвого стресу');
     await expect(page.locator('header img[alt="ЗалікОк"]').first()).toHaveAttribute('src', '/assets/brand/logo-primary.svg');
     const text = await page.locator('body').innerText();
     expect(text).not.toMatch(/Курсові/);
