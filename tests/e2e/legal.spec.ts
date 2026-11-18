@@ -12,7 +12,10 @@ test.describe('юридичні тексти', () => {
     const text = await page.locator('article').innerText();
     expect(text).not.toContain('**');
     expect(text).not.toMatch(/\]\(https?:/); // розмітка посилань не лишається в тексті
-    await expect(page.locator('article a[href="mailto:zalikok.ua@gmail.com"]')).toBeVisible();
+    await expect(page.locator('article a[href="mailto:zalikok.ua@gmail.com"]').first()).toBeVisible();
+    // Виконавець і строк повернення з Умов
+    await expect(page.getByText('Зезюля Я.Р.')).toBeVisible();
+    await expect(page.getByText('протягом 3 робочих днів')).toBeVisible();
     const tg = page.locator('article a[href="https://t.me/zalikOK_ua"]').first();
     await expect(tg).toHaveAttribute('rel', /noopener/);
     // приклади з Умов відображаються повністю
@@ -34,9 +37,14 @@ test.describe('юридичні тексти', () => {
     for (const path of ['/umovy', '/privacy']) {
       await page.goto(path);
       const marks = page.locator('mark.legal-placeholder');
-      expect(await marks.count()).toBeGreaterThan(0);
-      await expect(marks.first()).toContainText('заповнити');
-      await expect(page.getByText(/залишилися поля, які потрібно заповнити/)).toBeVisible();
+      if (path === '/privacy') {
+        // у Політиці ще лишаються поля для заповнення; Умови вже заповнені
+        expect(await marks.count()).toBeGreaterThan(0);
+        await expect(marks.first()).toContainText('заповнити');
+        await expect(page.getByText(/залишилися поля, які потрібно заповнити/)).toBeVisible();
+      } else {
+        await expect(marks).toHaveCount(0);
+      }
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
     }
     const sitemap = await (await request.get('/sitemap.xml')).text();
