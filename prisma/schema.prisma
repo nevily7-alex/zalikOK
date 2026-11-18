@@ -16,6 +16,8 @@ enum RequestStatus {
   delivered
   closed
   cancelled
+  done
+  failed
 }
 
 enum ScanStatus {
@@ -39,6 +41,7 @@ enum OutboxStatus {
 model Request {
   id                   String        @id @default(uuid()) @db.Uuid
   publicReference      String        @unique
+  number               Int           @unique @default(autoincrement())
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
   service              String
@@ -64,6 +67,10 @@ model Request {
   sourceUtm            Json?
   clientEstimate       Json?
   closedAt             DateTime?
+  dueDate              DateTime?     @db.Date
+  priority             Int           @default(0)
+  prepayment           Decimal?      @db.Decimal(10, 2)
+  reminderSentAt       DateTime?
 
   attachments Attachment[]
   outbox      NotificationOutbox[]
@@ -71,6 +78,7 @@ model Request {
 
   @@index([status, createdAt])
   @@index([deadline])
+  @@index([status, dueDate])
 }
 
 model UploadSession {
@@ -120,6 +128,7 @@ model NotificationOutbox {
   requestId         String       @db.Uuid
   request           Request      @relation(fields: [requestId], references: [id], onDelete: Cascade)
   channel           String
+  kind              String       @default("new_request")
   status            OutboxStatus @default(pending)
   attempts          Int          @default(0)
   nextAttemptAt     DateTime     @default(now())

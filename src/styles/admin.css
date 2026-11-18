@@ -157,3 +157,42 @@
   background: var(--color-error-bg);
   color: var(--color-error);
 }
+
+/* ---------- CRM: вкладки, рядки, статуси, гроші, статистика ---------- */
+.admin-main { max-width: 1560px; }
+.admin-header__nav { display: flex; gap: 16px; font-weight: 700; }
+.admin-header__nav a { text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
+.admin-header__nav a:hover { border-color: var(--color-primary); }
+.admin-h2 { font-family: var(--font-heading); font-size: 20px; margin: 24px 0 12px; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.admin-tabs a { display: inline-flex; gap: 8px; align-items: center; padding: 8px 16px; border: 1.5px solid var(--color-border); border-radius: 999px; background: var(--color-bg); font-weight: 700; text-decoration: none; }
+.admin-tabs a span { background: var(--color-neutral); border-radius: 999px; padding: 0 8px; font-size: 13px; }
+.admin-tabs a:hover { border-color: var(--color-text); }
+.admin-tabs a[aria-current='page'] { background: var(--color-primary); border-color: var(--color-primary); }
+.admin-tabs a[aria-current='page'] span { background: rgb(255 255 255 / 0.7); }
+.admin-table--rows .admin-row { cursor: pointer; transition: background 0.15s; }
+.admin-table--rows .admin-row:hover { background: var(--color-soft-yellow); }
+.admin-table--rows td { vertical-align: top; }
+.admin-sub { display: block; color: var(--color-muted); font-size: 12px; line-height: 16px; }
+.admin-topic { white-space: normal !important; min-width: 180px; max-width: 280px; }
+.admin-status { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--color-neutral); }
+.admin-status--new { background: #e0efff; }
+.admin-status--in_progress, .admin-status--reviewing, .admin-status--quoted, .admin-status--awaiting_details, .admin-status--delivered { background: var(--color-soft-yellow); }
+.admin-status--done, .admin-status--closed { background: var(--color-success-bg); color: var(--color-success); }
+.admin-status--failed, .admin-status--cancelled { background: var(--color-error-bg); color: var(--color-error); }
+.admin-prio { font-size: 13px; }
+.admin-prio--1 { color: #a15c00; }
+.admin-prio--2 { color: var(--color-error); }
+.admin-outcome { display: flex; flex-wrap: wrap; gap: 12px; }
+.admin-money { display: grid; gap: 8px; margin: 0 0 16px; }
+.admin-money div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--color-border); }
+.admin-money dt { color: var(--color-muted); }
+.admin-money dd { margin: 0; font-weight: 700; }
+.admin-money__left dd { font-size: 20px; }
+.admin-kpis { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.admin-kpi { display: flex; flex-direction: column; gap: 4px; padding: 16px; border: 1px solid var(--color-border); border-radius: 16px; background: var(--color-bg); }
+.admin-kpi span { color: var(--color-muted); font-size: 14px; }
+.admin-kpi strong { font-family: var(--font-heading); font-size: 28px; line-height: 34px; }
+.admin-kpi small { color: var(--color-muted); font-size: 12px; line-height: 16px; }
+.admin-kpi--money strong { font-size: 24px; white-space: nowrap; }
+.admin-kpi--money { background: var(--color-soft-yellow); border-color: var(--color-soft-yellow); }

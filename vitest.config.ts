@@ -9,5 +9,5 @@ export default defineConfig({
       'server-only': path.resolve('tests/stubs/server-only.ts'),
     },
   },
-  test: { include: ['tests/unit/**/*.test.ts'], environment: 'node', testTimeout: 20000 },
+  test: { include: ['tests/unit/**/*.test.ts'], environment: 'node', testTimeout: 20000, fileParallelism: false },
 });

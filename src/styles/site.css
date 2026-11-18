@@ -1301,3 +1301,17 @@ body:has(dialog[open]) {
   .ssp__art { animation: ssp-pop 0.5s both; }
   .ssp__bar { animation: ssp-bar 5s linear forwards; }
 }
+
+/* Прихований вхід в адмінку: нічим не виділяється */
+.footer-secret,
+.footer-secret:hover,
+.footer-secret:focus,
+.footer-secret:active,
+.footer-secret:visited {
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: text;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}

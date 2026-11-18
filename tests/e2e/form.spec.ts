@@ -158,7 +158,7 @@ test.describe('сторінка заявки: майстер із трьох к�
     await clickNext(page);
     const contact = await fillStep3(page);
     await page.getByRole('button', { name: SUBMIT_NAME }).click();
-    await expect(page).toHaveURL(/\/diakuiemo\?ref=ZO-[A-Z0-9]{5}-[A-Z0-9]{5}$/);
+    await expect(page).toHaveURL(/\/diakuiemo\?ref=\d{6}$/);
     const url = page.url();
     expect(url).not.toContain(contact.slice(1));
     expect(url).not.toContain('Правов');

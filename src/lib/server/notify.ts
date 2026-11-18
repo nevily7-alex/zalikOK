@@ -3,6 +3,7 @@ import { prisma } from './db';
 import { appUrl, env } from './env';
 import { findPrice } from '@/lib/prices';
 import { todayInKyiv } from '@/lib/kyiv-date';
+import { ACTIVE_STATUSES, formatMoney, remaining, toNum } from '@/lib/admin-labels';
 import { CONTACT_LABELS, DISCIPLINE_LABELS, SERVICE_LABELS, type ContactMethod, type Discipline, type Service } from '@/lib/validation';
 
 const MAX_ATTEMPTS = 6;
@@ -36,6 +37,9 @@ export interface NotifyRequest {
   deadline: Date;
   contactMethod: string;
   contact: string;
+  dueDate?: Date | null;
+  estimatedPrice?: unknown;
+  prepayment?: unknown;
 }
 
 /**
@@ -70,6 +74,41 @@ export function buildRequestButtons(r: NotifyRequest): RequestButton[][] {
   return rows;
 }
 
+function contactBlock(r: NotifyRequest): string[] {
+  const method = r.contactMethod as ContactMethod;
+  const c = r.contact.trim();
+  if (method === 'telegram') return [`✈️ <b>Telegram:</b> <code>@${esc(c.replace(/^@/, ''))}</code>`];
+  if (method === 'email') return [`✉️ <b>E-mail:</b> <code>${esc(c)}</code>`, `👉 <a href="mailto:${esc(c)}">Написати листа</a>`];
+  return [`📞 <b>${CONTACT_LABELS.phone}:</b> <code>${esc(c)}</code>`];
+}
+
+const dmy = (iso: string) => iso.split('-').reverse().join('.');
+
+/** Нагадування про дедлайн виконання (за 3 дні): що за заявка, скільки лишилось до дедлайну, гроші, контакт. */
+export function buildReminderMessage(r: NotifyRequest, now: Date = new Date()): string {
+  const hasAdminButton = isPublicHttps(adminUrl(r));
+  const service = SERVICE_LABELS[r.service as Service] ?? r.service;
+  const work = findPrice(r.workType)?.title;
+  const due = (r.dueDate ?? r.deadline).toISOString().slice(0, 10);
+  const days = Math.round((Date.parse(`${due}T00:00:00Z`) - Date.parse(`${todayInKyiv(now)}T00:00:00Z`)) / 86_400_000);
+  const when = days < 0 ? `прострочено на ${-days} дн.` : days === 0 ? 'сьогодні' : `через ${days} дн.`;
+  const price = toNum(r.estimatedPrice);
+  const prepaid = toNum(r.prepayment);
+  return [
+    `⏰ <b>Нагадування про дедлайн</b> <code>${esc(r.publicReference)}</code>`,
+    '',
+    `📅 <b>Здати до:</b> ${dmy(due)} (${when})${r.dueDate ? '' : ' — дедлайн клієнта'}`,
+    `📌 <b>Послуга:</b> ${esc(service)}${work ? ` · ${esc(work)}` : ''}`,
+    ...(price !== null
+      ? [`💰 <b>Вартість:</b> ${formatMoney(price)} · передоплата ${formatMoney(prepaid ?? 0)} · <b>залишок ${formatMoney(remaining(price, prepaid))}</b>`]
+      : ['💰 <b>Вартість:</b> ще не вказана']),
+    '',
+    '👤 <b>Контакт клієнта</b>',
+    ...contactBlock(r),
+    ...(hasAdminButton ? [] : ['', `🔗 <a href="${esc(adminUrl(r))}">Відкрити заявку в адмінці</a>`]),
+  ].join('\n');
+}
+
 export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): string {
   const hasAdminButton = isPublicHttps(adminUrl(r));
   const service = SERVICE_LABELS[r.service as Service] ?? r.service;
@@ -80,17 +119,7 @@ export function buildRequestMessage(r: NotifyRequest, now: Date = new Date()): s
   const left = days < 0 ? '' : days === 0 ? ' (сьогодні)' : ` (через ${days} дн.)`;
   const [y, m, d] = dl.split('-');
 
-  const method = r.contactMethod as ContactMethod;
-  const c = r.contact.trim();
-  let contactLines: string[];
-  if (method === 'telegram') {
-    const user = c.replace(/^@/, '');
-    contactLines = [`✈️ <b>Telegram:</b> <code>@${esc(user)}</code>`];
-  } else if (method === 'email') {
-    contactLines = [`✉️ <b>E-mail:</b> <code>${esc(c)}</code>`, `👉 <a href="mailto:${esc(c)}">Написати листа</a>`];
-  } else {
-    contactLines = [`📞 <b>${CONTACT_LABELS.phone}:</b> <code>${esc(c)}</code>`];
-  }
+  const contactLines = contactBlock(r);
 
   return [
     `🆕 <b>Нова заявка</b> <code>${esc(r.publicReference)}</code>`,
@@ -134,7 +163,7 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
     where: { status: 'pending', nextAttemptAt: { lte: new Date() } },
     orderBy: { nextAttemptAt: 'asc' },
     take: limit,
-    include: { request: { select: { id: true, publicReference: true, service: true, workType: true, discipline: true, disciplineOther: true, pages: true, deadline: true, contactMethod: true, contact: true } } },
+    include: { request: { select: { id: true, publicReference: true, service: true, workType: true, discipline: true, disciplineOther: true, pages: true, deadline: true, dueDate: true, estimatedPrice: true, prepayment: true, contactMethod: true, contact: true } } },
   });
 
   for (const item of due) {
@@ -154,7 +183,7 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
       continue;
     }
 
-    const text = buildRequestMessage(item.request);
+    const text = item.kind === 'deadline_reminder' ? buildReminderMessage(item.request) : buildRequestMessage(item.request);
 
     try {
       const providerMessageId = await sendTelegram(text, buildRequestButtons(item.request));
@@ -178,4 +207,33 @@ export async function processOutbox(limit = 10): Promise<{ sent: number; failed:
     }
   }
   return stats;
+}
+
+/** Днів наперед, за скільки нагадувати про дедлайн. */
+export const REMINDER_DAYS = 3;
+
+/**
+ * Ставить у чергу нагадування для активних заявок, чий дедлайн (виконання, а якщо його немає — клієнта)
+ * настає протягом REMINDER_DAYS днів або вже минув. Одна заявка — одне нагадування на дедлайн.
+ * Запускається щодоби з cron разом із обробкою черги.
+ */
+export async function enqueueDeadlineReminders(now: Date = new Date()): Promise<number> {
+  const limit = new Date(`${todayInKyiv(now)}T00:00:00Z`);
+  limit.setUTCDate(limit.getUTCDate() + REMINDER_DAYS);
+  const due = await prisma.request.findMany({
+    where: {
+      status: { in: ACTIVE_STATUSES as never },
+      reminderSentAt: null,
+      OR: [{ dueDate: { lte: limit } }, { dueDate: null, deadline: { lte: limit } }],
+    },
+    select: { id: true },
+    take: 200,
+  });
+  for (const r of due) {
+    await prisma.$transaction([
+      prisma.notificationOutbox.create({ data: { requestId: r.id, channel: 'telegram', kind: 'deadline_reminder' } }),
+      prisma.request.update({ where: { id: r.id }, data: { reminderSentAt: now } }),
+    ]);
+  }
+  return due.length;
 }

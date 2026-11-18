@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { FormSelect } from '@/components/ui/FormControls';
+import { FormDate, FormSelect } from '@/components/ui/FormControls';
 import { prisma } from '@/lib/server/db';
 import { requireManager } from '@/lib/server/guard';
-import { OUTBOX_LABELS, SCAN_LABELS, STATUSES, STATUS_LABELS } from '@/lib/admin-labels';
+import { OUTBOX_LABELS, PRIORITIES, SCAN_LABELS, STATUSES, STATUS_LABELS, formatMoney, remaining, toNum } from '@/lib/admin-labels';
 import { formatBytes } from '@/lib/upload-rules';
 import { CONTACT_LABELS, DISCIPLINE_LABELS, SERVICE_LABELS, type ContactMethod, type Discipline, type Service } from '@/lib/validation';
 import { findPrice } from '@/lib/prices';
 import { unscannedDownloadAllowed } from '@/lib/server/downloads';
-import { assignToMe, retryNotification, updateNote, updatePrice, updateStatus } from '../../actions';
+import { assignToMe, retryNotification, setOutcome, updateNote, updatePrepayment, updatePrice, updateSchedule, updateStatus } from '../../actions';
 
 function describeEstimate(v: unknown): string {
   const e = v as { status?: string; total?: number; reason?: string; normalDays?: number } | null;
@@ -34,6 +34,10 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
   });
   if (!r) notFound();
   const fmt = (d: Date) => d.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' });
+  const price = toNum(r.estimatedPrice);
+  const prepaid = toNum(r.prepayment);
+  const left = remaining(price, prepaid);
+  const closedOut = r.status === 'done' || r.status === 'failed';
 
   const rows: [string, React.ReactNode][] = [
     ['Номер', r.publicReference],
@@ -48,7 +52,8 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
         : (DISCIPLINE_LABELS[r.discipline as Discipline] ?? r.discipline),
     ],
     ['Тема', r.topicUnknown && !r.topic ? 'Ще не визначено' : r.topic],
-    ['Дедлайн', r.deadline.toISOString().slice(0, 10)],
+    ['Дедлайн клієнта', r.deadline.toISOString().slice(0, 10)],
+    ['Дедлайн виконання', r.dueDate ? r.dueDate.toISOString().slice(0, 10) : 'не встановлено'],
     ['Обсяг, стор.', r.pages ?? '—'],
     ['Спосіб зв’язку', CONTACT_LABELS[r.contactMethod as ContactMethod] ?? r.contactMethod],
     ['Контакт', r.contact],
@@ -78,8 +83,83 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
         </section>
 
         <div className="admin-stack">
+          <section aria-labelledby="o2-title" className="admin-card">
+            <h2 id="o2-title">Результат</h2>
+            <p className="field-hint">Поточний статус: <strong>{STATUS_LABELS[r.status]}</strong></p>
+            <div className="admin-outcome">
+              <form action={setOutcome}>
+                <input type="hidden" name="id" value={r.id} />
+                <input type="hidden" name="outcome" value="done" />
+                <button className="btn btn-primary" type="submit" disabled={r.status === 'done'}>
+                  ✅ Успішно виконано
+                </button>
+              </form>
+              <form action={setOutcome}>
+                <input type="hidden" name="id" value={r.id} />
+                <input type="hidden" name="outcome" value="failed" />
+                <button className="btn btn-secondary" type="submit" disabled={r.status === 'failed'}>
+                  ❌ Провалено
+                </button>
+              </form>
+            </div>
+            {closedOut && r.closedAt && <p className="field-hint">Закрито: {fmt(r.closedAt)}. Статус можна змінити нижче.</p>}
+          </section>
+
+          <section aria-labelledby="p-title" className="admin-card">
+            <h2 id="p-title">Оплата</h2>
+            <dl className="admin-money">
+              <div><dt>Вартість</dt><dd>{formatMoney(price)}</dd></div>
+              <div><dt>Передоплата</dt><dd>{formatMoney(prepaid)}</dd></div>
+              <div className="admin-money__left"><dt>Залишок до сплати</dt><dd>{formatMoney(left)}</dd></div>
+            </dl>
+            <form action={updatePrice} className="admin-inline">
+              <input type="hidden" name="id" value={r.id} />
+              <div className="field">
+                <label htmlFor="price">Вартість, грн</label>
+                <input id="price" name="price" type="text" inputMode="decimal" defaultValue={r.estimatedPrice?.toString() ?? ''} />
+              </div>
+              <button className="btn btn-primary btn-sm" type="submit">
+                Зберегти вартість
+              </button>
+            </form>
+            <form action={updatePrepayment} className="admin-inline">
+              <input type="hidden" name="id" value={r.id} />
+              <div className="field">
+                <label htmlFor="prepayment">Внесена передоплата, грн</label>
+                <input id="prepayment" name="prepayment" type="text" inputMode="decimal" defaultValue={r.prepayment?.toString() ?? ''} placeholder="0" />
+              </div>
+              <button className="btn btn-primary btn-sm" type="submit">
+                Зберегти передоплату
+              </button>
+            </form>
+          </section>
+
+          <section aria-labelledby="sch-title" className="admin-card">
+            <h2 id="sch-title">Дедлайн виконання і пріоритет</h2>
+            <p className="field-hint">За 3 дні до дедлайну менеджеру прийде нагадування в Telegram (якщо дедлайн не задано, береться дедлайн клієнта).</p>
+            <form action={updateSchedule} className="admin-inline">
+              <input type="hidden" name="id" value={r.id} />
+              <div className="field">
+                <label htmlFor="dueDate">Дедлайн виконання</label>
+                <FormDate id="dueDate" name="dueDate" defaultValue={r.dueDate ? r.dueDate.toISOString().slice(0, 10) : ''} placeholder="Не встановлено" />
+              </div>
+              <div className="field">
+                <label htmlFor="priority">Пріоритет</label>
+                <FormSelect
+                  id="priority"
+                  name="priority"
+                  defaultValue={String(r.priority)}
+                  items={PRIORITIES.map((p) => ({ value: String(p.value), label: p.label }))}
+                />
+              </div>
+              <button className="btn btn-primary btn-sm" type="submit">
+                Зберегти
+              </button>
+            </form>
+          </section>
+
           <section aria-labelledby="s-title" className="admin-card">
-            <h2 id="s-title">Статус і вартість</h2>
+            <h2 id="s-title">Статус</h2>
             <form action={updateStatus} className="admin-inline">
               <input type="hidden" name="id" value={r.id} />
               <div className="field">
@@ -93,16 +173,6 @@ export default async function RequestPage({ params }: { params: Promise<{ id: st
               </div>
               <button className="btn btn-primary btn-sm" type="submit">
                 Зберегти статус
-              </button>
-            </form>
-            <form action={updatePrice} className="admin-inline">
-              <input type="hidden" name="id" value={r.id} />
-              <div className="field">
-                <label htmlFor="price">Вартість, грн (вручну)</label>
-                <input id="price" name="price" type="text" inputMode="decimal" defaultValue={r.estimatedPrice?.toString() ?? ''} />
-              </div>
-              <button className="btn btn-primary btn-sm" type="submit">
-                Зберегти вартість
               </button>
             </form>
             <form action={assignToMe}>

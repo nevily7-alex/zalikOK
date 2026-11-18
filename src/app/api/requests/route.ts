@@ -2,7 +2,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { after } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/server/db';
-import { newReference, safeEqual, sha256 } from '@/lib/server/crypto';
+import { formatReference, newReference, safeEqual, sha256 } from '@/lib/server/crypto';
 import { apiError, clientKey, forbiddenOrigin, json, sameOrigin } from '@/lib/server/http';
 import { hit } from '@/lib/server/rate-limit';
 import { intEnv } from '@/lib/server/env';
@@ -157,6 +157,9 @@ export async function POST(req: Request) {
           clientEstimate: clientEstimate as never,
         },
       });
+      // Публічний номер — порядковий шестизначний; тимчасове випадкове значення замінюємо одразу в тій самій транзакції
+      r.publicReference = formatReference(r.number);
+      await tx.request.update({ where: { id: r.id }, data: { publicReference: r.publicReference } });
       if (session) {
         await tx.attachment.updateMany({ where: { id: { in: fileIds }, sessionId: session.id }, data: { requestId: r.id } });
         await tx.uploadSession.update({ where: { id: session.id }, data: { closedAt: new Date() } });

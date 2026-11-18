@@ -72,7 +72,13 @@ export function Footer() {
         <div className="site-footer__legal">
           <Link href="/privacy">{content.footer.privacy}</Link>
           <Link href="/umovy">{content.footer.terms}</Link>
-          <small>© {year} ЗалікОк</small>
+          <small>
+            © {year} ЗалікО
+            {/* Прихований вхід у панель менеджера: остання літера, без виділення й без підказок */}
+            <a href="/admin" className="footer-secret" tabIndex={-1} aria-hidden="true">
+              к
+            </a>
+          </small>
         </div>
       </div>
     </footer>

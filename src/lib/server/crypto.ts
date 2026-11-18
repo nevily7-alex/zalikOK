@@ -23,4 +23,8 @@ export function newReference(): string {
   return `ZO-${s.slice(0, 5)}-${s.slice(5)}`;
 }
 
-export const REFERENCE_RE = /^ZO-[A-HJKMNP-Z2-9]{5}-[A-HJKMNP-Z2-9]{5}$/;
+/** Публічний номер заявки: шестизначний порядковий (000001, 000002, ...). Випадковий newReference() лише тимчасовий, до отримання порядкового номера. */
+export const REFERENCE_RE = /^\d{6,}$/;
+export function formatReference(n: number): string {
+  return String(n).padStart(6, '0');
+}

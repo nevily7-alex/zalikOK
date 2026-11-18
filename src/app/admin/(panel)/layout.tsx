@@ -23,6 +23,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         <Link href="/admin" className="admin-header__title">
           ЗалікОк · Заявки
         </Link>
+        <nav className="admin-header__nav" aria-label="Розділи">
+          <Link href="/admin">Заявки</Link>
+          <Link href="/admin/stats">Статистика</Link>
+        </nav>
         <span className="admin-header__user">{access.manager.email}</span>
         <LogoutButton />
       </header>

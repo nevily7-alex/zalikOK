@@ -1,15 +1,16 @@
 import { checkCron } from '@/lib/server/cron-auth';
 import { json } from '@/lib/server/http';
-import { notificationsEnabled, processOutbox } from '@/lib/server/notify';
+import { enqueueDeadlineReminders, notificationsEnabled, processOutbox } from '@/lib/server/notify';
 
 export const maxDuration = 60;
 
-/** Обробка черги сповіщень за розкладом (повтори після збоїв). Запускати щохвилини-кілька хвилин. */
+/** Щодоби: нагадування про дедлайни за 3 дні + обробка черги сповіщень (повтори після збоїв). */
 async function handle(req: Request) {
   const denied = checkCron(req);
   if (denied) return denied;
+  const reminders = await enqueueDeadlineReminders();
   const stats = await processOutbox(50);
-  return json({ notificationsEnabled: notificationsEnabled(), ...stats });
+  return json({ notificationsEnabled: notificationsEnabled(), reminders, ...stats });
 }
 
 export const GET = handle;

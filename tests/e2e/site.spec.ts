@@ -170,7 +170,7 @@ test.describe('SEO та службові сторінки', () => {
   test('сторінка /diakuiemo без реальної заявки перенаправляє на форму', async ({ page }) => {
     await page.goto('/diakuiemo');
     await expect(page).toHaveURL(/\/zaiavka$/);
-    await page.goto('/diakuiemo?ref=ZO-AAAAA-BBBBB');
+    await page.goto('/diakuiemo?ref=000000');
     await expect(page).toHaveURL(/\/zaiavka$/);
   });
 });

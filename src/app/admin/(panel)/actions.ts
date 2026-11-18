@@ -22,9 +22,62 @@ export async function updateStatus(formData: FormData) {
   if (current.status === status) return;
   await prisma.request.update({
     where: { id },
-    data: { status, closedAt: status === 'closed' || status === 'cancelled' ? new Date() : null },
+    data: { status, closedAt: status === 'done' || status === 'failed' ? new Date() : null },
   });
   await audit(m.id, id, 'status.changed', { from: current.status, to: status });
+  revalidatePath(`/admin/requests/${id}`);
+  revalidatePath('/admin');
+  revalidatePath('/admin/stats');
+}
+
+/** Кнопки «Успішно виконано» / «Провалено». */
+export async function setOutcome(formData: FormData) {
+  const m = await requireManager();
+  const id = idSchema.parse(formData.get('id'));
+  const outcome = z.enum(['done', 'failed']).parse(formData.get('outcome'));
+  const current = await prisma.request.findUniqueOrThrow({ where: { id }, select: { status: true } });
+  if (current.status === outcome) return;
+  await prisma.request.update({ where: { id }, data: { status: outcome, closedAt: new Date() } });
+  await audit(m.id, id, 'status.changed', { from: current.status, to: outcome });
+  revalidatePath(`/admin/requests/${id}`);
+  revalidatePath('/admin');
+  revalidatePath('/admin/stats');
+}
+
+const MONEY_RE = /^\d{1,8}([.,]\d{1,2})?$/;
+function parseMoney(raw: FormDataEntryValue | null): string | null {
+  const v = String(raw ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  if (v === '') return null;
+  if (!MONEY_RE.test(v.replace('.', ','))) throw new Error('Некоректна сума');
+  return v;
+}
+
+export async function updatePrepayment(formData: FormData) {
+  const m = await requireManager();
+  const id = idSchema.parse(formData.get('id'));
+  const prepayment = parseMoney(formData.get('prepayment'));
+  const current = await prisma.request.findUniqueOrThrow({ where: { id }, select: { estimatedPrice: true } });
+  if (prepayment !== null && current.estimatedPrice !== null && Number(prepayment) > Number(current.estimatedPrice)) {
+    throw new Error('Передоплата не може перевищувати вартість');
+  }
+  await prisma.request.update({ where: { id }, data: { prepayment } });
+  await audit(m.id, id, 'prepayment.changed', { to: prepayment });
+  revalidatePath(`/admin/requests/${id}`);
+  revalidatePath('/admin/stats');
+}
+
+/** Дедлайн виконання (його ставить менеджер) і пріоритет. Нова дата дедлайну знову вмикає нагадування. */
+export async function updateSchedule(formData: FormData) {
+  const m = await requireManager();
+  const id = idSchema.parse(formData.get('id'));
+  const rawDate = String(formData.get('dueDate') ?? '').trim();
+  const priority = z.coerce.number().int().min(0).max(2).parse(formData.get('priority') ?? 0);
+  if (rawDate && !/^\d{4}-\d{2}-\d{2}$/.test(rawDate)) throw new Error('Некоректна дата');
+  const dueDate = rawDate ? new Date(`${rawDate}T00:00:00Z`) : null;
+  const current = await prisma.request.findUniqueOrThrow({ where: { id }, select: { dueDate: true } });
+  const changed = (current.dueDate?.toISOString().slice(0, 10) ?? null) !== (rawDate || null);
+  await prisma.request.update({ where: { id }, data: { dueDate, priority, ...(changed ? { reminderSentAt: null } : {}) } });
+  await audit(m.id, id, 'schedule.changed', { dueDate: rawDate || null, priority });
   revalidatePath(`/admin/requests/${id}`);
   revalidatePath('/admin');
 }
@@ -38,9 +91,14 @@ export async function updatePrice(formData: FormData) {
     if (!/^\d{1,8}(\.\d{1,2})?$/.test(raw)) throw new Error('Некоректна сума');
     price = raw;
   }
+  const current = await prisma.request.findUniqueOrThrow({ where: { id }, select: { prepayment: true } });
+  if (price !== null && current.prepayment !== null && Number(current.prepayment) > Number(price)) {
+    throw new Error('Вартість не може бути меншою за передоплату');
+  }
   await prisma.request.update({ where: { id }, data: { estimatedPrice: price } });
   await audit(m.id, id, 'price.changed', { to: price });
   revalidatePath(`/admin/requests/${id}`);
+  revalidatePath('/admin/stats');
 }
 
 export async function updateNote(formData: FormData) {

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildRequestButtons, buildRequestMessage, type NotifyRequest } from '@/lib/server/notify';
+import { buildReminderMessage, buildRequestButtons, buildRequestMessage, type NotifyRequest } from '@/lib/server/notify';
 
 const base: NotifyRequest = {
   id: '11111111-1111-1111-1111-111111111111',
-  publicReference: 'ZO-ABCDE-FGHJK',
+  publicReference: '000123',
   service: 'plan',
   workType: 'kursova',
   discipline: 'law',
@@ -18,7 +18,7 @@ const now = new Date('2026-11-20T10:00:00Z');
 describe('текст сповіщення про заявку', () => {
   it('структурований емодзі, дедлайн з лишком днів, контакт копіюється й має посилання', () => {
     const t = buildRequestMessage(base, now);
-    expect(t).toContain('🆕 <b>Нова заявка</b> <code>ZO-ABCDE-FGHJK</code>');
+    expect(t).toContain('🆕 <b>Нова заявка</b> <code>000123</code>');
     expect(t).toContain('📌 <b>Послуга:</b> План і структура');
     expect(t).toContain('📚 <b>Предмет:</b> Право');
     expect(t).toContain('📄 <b>Обсяг:</b> 30 стор.');
@@ -59,6 +59,23 @@ describe('текст сповіщення про заявку', () => {
       vi.stubEnv('APP_URL', 'http://localhost:3000');
       expect(buildRequestButtons({ ...base, contactMethod: 'email', contact: 'a@b.ua' })).toEqual([]);
       expect(buildRequestMessage(base, now)).toContain('Відкрити заявку в адмінці');
+    });
+  });
+
+  describe('нагадування про дедлайн', () => {
+    it('показує дату, залишок днів, вартість, передоплату й залишок до сплати', () => {
+      const t = buildReminderMessage({ ...base, dueDate: new Date('2026-11-23T00:00:00Z'), estimatedPrice: '2000.00', prepayment: '500.00' }, now);
+      expect(t).toContain('⏰ <b>Нагадування про дедлайн</b> <code>000123</code>');
+      expect(t).toContain('23.11.2026 (через 3 дн.)');
+      expect(t).toContain('2 000 грн');
+      expect(t).toContain('залишок 1 500 грн');
+      expect(t).toContain('<code>@student_ua</code>');
+    });
+    it('без власного дедлайну бере дедлайн клієнта; без вартості пише, що її не вказано', () => {
+      const t = buildReminderMessage({ ...base, deadline: new Date('2026-11-19T00:00:00Z') }, now);
+      expect(t).toContain('прострочено на 1 дн.');
+      expect(t).toContain('дедлайн клієнта');
+      expect(t).toContain('ще не вказана');
     });
   });
 });

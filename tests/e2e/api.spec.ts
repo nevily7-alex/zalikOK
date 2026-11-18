@@ -27,7 +27,7 @@ test.describe('POST /api/requests', () => {
     expect(first.status()).toBe(201);
     const a = await first.json();
     expect(a.status).toBe('received');
-    expect(a.reference).toMatch(/^ZO-/);
+    expect(a.reference).toMatch(/^\d{6}$/);
     expect(Object.keys(a).sort()).toEqual(['reference', 'requestId', 'status']); // без внутрішніх даних/контактів
 
     const again = await postRequest(api, body, key);
