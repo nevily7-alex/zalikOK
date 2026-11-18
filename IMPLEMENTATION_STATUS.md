@@ -112,3 +112,6 @@
 - `vercel.json` (регіон lhr1, два щодобові cron під Hobby), лінива ініціалізація Prisma (збірка без секретів), `appUrl()` бере адресу з Vercel, `npm run vercel:env` готує змінні для імпорту, `docs/DEPLOY_VERCEL.md`.
 - Без домену сайт не індексується (robots Disallow: / і noindex). Завантаження непереперевірених файлів — лише за явного дозволу й підтвердження (`downloads.ts`, журнал).
 - Vitest 42/42, Playwright 73/73; збірка без DATABASE_URL проходить.
+
+## Доповнення: прибрано блок «Приклади матеріалів» — ✅
+- Видалено секцію з головної, компонент `Samples`, його стилі, тексти в `site-content.json`, демонстраційні файли `public/assets/samples` і відповідні тести (Playwright 72/72, Vitest 42/42). Повні оригінали лишилися в пакеті `ZalikOk_Package/assets/samples`.

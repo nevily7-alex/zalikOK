@@ -2,7 +2,6 @@ import { Hero } from '@/components/Hero';
 import { Services } from '@/components/Services';
 import { Pricing } from '@/components/Pricing';
 import { Process } from '@/components/Process';
-import { Samples } from '@/components/Samples';
 import { RequestSection } from '@/components/RequestSection';
 import { Faq } from '@/components/Faq';
 import { SectionTitle } from '@/components/SectionTitle';
@@ -33,7 +32,6 @@ export default function HomePage() {
       <Services />
       <Pricing />
       <Process />
-      <Samples title={content.samples.title} items={content.samples.items} cta={content.samples.cta} />
       <RequestSection />
       <section id="faq" className="section container" aria-labelledby="faq-title">
         <SectionTitle id="faq-title">{content.faq.title}</SectionTitle>

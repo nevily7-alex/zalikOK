@@ -52,7 +52,7 @@ public/assets/      логотипи, іконки + sprite, hero, зразки,
 src/app/(site)/     /, /zaiavka, /umovy, /privacy, /diakuiemo
 src/app/admin/      /admin/login, список і картка заявки (server actions)
 src/app/api/        requests, uploads/*, admin/attachments/[id], auth/[...all]
-src/components/     секції головної, RequestForm (єдина форма), Header (drawer), Faq, Samples (modal)
+src/components/     секції головної, RequestForm (єдина форма), Header (drawer), Faq
 src/lib/            validation (спільна Zod-схема), upload-rules, kyiv-date; server/* — db, storage, auth, rate-limit, notify
 src/fonts/          підмножина Manrope/Nunito Sans (латиниця+кирилиця) для next/font
 prisma/             schema + міграції

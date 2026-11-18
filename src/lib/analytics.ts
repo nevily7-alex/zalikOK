@@ -8,7 +8,6 @@ export type AnalyticsEvent =
   | 'estimate_cta_click'
   | 'telegram_click'
   | 'service_select'
-  | 'example_open'
   | 'request_start'
   | 'request_submit_success'
   | 'request_submit_error';

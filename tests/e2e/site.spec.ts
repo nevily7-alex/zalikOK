@@ -18,7 +18,7 @@ test.describe('головна', () => {
 
   test('усі секції присутні, якорі й посилання реальні, фальшивих # немає', async ({ page }) => {
     await page.goto('/');
-    for (const id of ['services', 'pricing', 'process', 'samples', 'request', 'faq', 'contacts']) {
+    for (const id of ['services', 'pricing', 'process', 'request', 'faq', 'contacts']) {
       await expect(page.locator(`#${id}`)).toHaveCount(1);
     }
     const hrefs = await page.locator('a[href]').evaluateAll((els) => els.map((e) => e.getAttribute('href')!));
@@ -76,15 +76,13 @@ test.describe('головна', () => {
     await expect(page).toHaveURL(/#main$/);
   });
 
-  test('hero: eager-зображення з резервом місця; інші зображення lazy', async ({ page }) => {
+  test('hero: eager-зображення з резервом місця', async ({ page }) => {
     await page.goto('/');
     const hero = page.locator('.hero__art img');
     await expect(hero).toHaveAttribute('fetchpriority', 'high');
     expect(await hero.getAttribute('loading')).toBeNull();
     const box = await hero.boundingBox();
     expect(Math.abs(box!.width / box!.height - 1.5)).toBeLessThan(0.05);
-    const lazy = await page.locator('.sample-card__preview img').evaluateAll((els) => els.map((e) => e.getAttribute('loading')));
-    expect(lazy.every((l) => l === 'lazy')).toBe(true);
   });
 });
 
@@ -122,7 +120,7 @@ test.describe('мобільна навігація', () => {
   });
 });
 
-test.describe('FAQ і приклади', () => {
+test.describe('FAQ', () => {
   test('FAQ: aria-expanded та керована область, клавіатура', async ({ page }) => {
     await page.goto('/');
     const btn = page.getByRole('button', { name: 'Як визначається вартість?' });
@@ -138,33 +136,6 @@ test.describe('FAQ і приклади', () => {
     // немає обіцянок гарантованої оцінки/унікальності
     const faq = await page.locator('#faq').innerText();
     expect(faq).not.toMatch(/100\s?%|гарантуємо.*оцінк/i);
-  });
-
-  test('приклад: модальне вікно, фокус, Esc, клік поза вікном, кнопка закриття', async ({ page }) => {
-    await page.goto('/');
-    const open = page.getByRole('button', { name: 'Переглянути приклад' }).first();
-    await open.focus();
-    await page.keyboard.press('Enter');
-    const dialog = page.locator('dialog.modal');
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('Демонстраційний матеріал')).toBeVisible();
-    await expect(dialog.getByRole('img')).toBeVisible();
-    await expect(dialog.getByRole('button', { name: 'Закрити' })).toBeFocused();
-    // фокус залишається у вікні
-    for (let i = 0; i < 5; i++) await page.keyboard.press('Tab');
-    expect(await page.evaluate(() => !!document.activeElement?.closest('dialog'))).toBe(true);
-    await page.keyboard.press('Escape');
-    await expect(dialog).toBeHidden();
-    await expect(open).toBeFocused();
-
-    await open.click();
-    await expect(dialog).toBeVisible();
-    await page.mouse.click(5, 5); // поза вікном
-    await expect(dialog).toBeHidden();
-
-    await open.click();
-    await dialog.getByRole('button', { name: 'Закрити' }).click();
-    await expect(dialog).toBeHidden();
   });
 });
 
