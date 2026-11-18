@@ -337,10 +337,8 @@ test.describe('сторінка заявки: майстер із трьох к�
     expect(size).toBeGreaterThanOrEqual(16);
   });
 
-  test('головна: картки послуг і прайс ведуть на сторінку заявки з передвибором', async ({ page }) => {
-    await page.goto('/');
-    await page.locator('a[href="/zaiavka?service=formatting"]').click();
-    await expect(page).toHaveURL(/service=formatting/);
+  test('посилання на заявку з передвибором послуги працює', async ({ page }) => {
+    await page.goto('/zaiavka?service=formatting');
     await fillStep1(page);
     await clickNext(page);
     await expect(page.locator('#f-service')).toHaveAttribute('data-value', 'formatting');

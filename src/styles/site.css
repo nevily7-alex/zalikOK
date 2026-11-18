@@ -1274,3 +1274,30 @@ body:has(dialog[open]) {
 .cta-banner--art .btn-primary { background: var(--color-text); color: #fff; }
 .cta-banner--art .btn-primary:hover { background: #000; }
 .cta-banner--art .btn-secondary { background: var(--color-surface); }
+
+/* ---------- Головна: перелік послуг (список + велика картка) ---------- */
+.services-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.ssp { display: grid; gap: 16px; margin-top: 28px; align-items: stretch; }
+.ssp__list { display: grid; gap: 8px; align-content: start; padding: 0; margin: 0; list-style: none; }
+.ssp__item { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 10px; text-align: left; border: 1.5px solid var(--color-border); background: var(--color-surface); color: var(--color-text); border-radius: 18px; padding: 14px 18px; font: 700 16px var(--font-heading); cursor: pointer; transition: border-color 0.25s, background 0.25s, transform 0.25s; }
+.ssp__item:hover { border-color: var(--color-text); }
+.ssp__item[aria-pressed='true'] { background: var(--color-primary); border-color: var(--color-primary); }
+.ssp__item small { font: 700 13px var(--font-body); opacity: 0.65; white-space: nowrap; }
+.ssp__det { position: relative; overflow: hidden; display: grid; gap: 20px; align-items: center; padding: 28px; min-height: 300px; border-radius: 32px; background: var(--color-surface); border: 1px solid var(--color-border); }
+.ssp__txt h3 { font-family: var(--font-heading); font-size: clamp(24px, 3vw, 30px); line-height: 1.15; margin: 12px 0 10px; }
+.ssp__txt p { margin: 0 0 18px; color: var(--color-muted); max-width: 46ch; }
+.ssp__price { display: inline-block; background: var(--color-soft-yellow); padding: 3px 12px; border-radius: var(--radius-pill); font-weight: 800; font-size: 13px; }
+.ssp__go { display: inline-flex; align-items: center; background: var(--color-text); color: #fff; padding: 12px 22px; border-radius: var(--radius-pill); font: 800 15px var(--font-heading); text-decoration: none; transition: background 0.2s, color 0.2s; }
+.ssp__go:hover { background: var(--color-primary); color: var(--color-text); }
+.ssp__art { width: min(220px, 100%); justify-self: center; display: none; }
+.ssp__bar { position: absolute; left: 0; bottom: 0; height: 5px; width: 0; background: var(--color-primary); }
+@media (min-width: 560px) { .ssp__art { display: block; } .ssp__det { grid-template-columns: 1fr 200px; padding: 36px; } }
+@media (min-width: 900px) { .ssp { grid-template-columns: 320px 1fr; } .ssp__item[aria-pressed='true'] { transform: translateX(6px); } }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes ssp-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  @keyframes ssp-pop { from { opacity: 0; transform: scale(0.85) rotate(-6deg); } to { opacity: 1; transform: none; } }
+  @keyframes ssp-bar { to { width: 100%; } }
+  .ssp__txt { animation: ssp-up 0.45s both; }
+  .ssp__art { animation: ssp-pop 0.5s both; }
+  .ssp__bar { animation: ssp-bar 5s linear forwards; }
+}

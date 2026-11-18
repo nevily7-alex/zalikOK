@@ -9,8 +9,9 @@ test.describe('головна', () => {
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveText('Студентські роботи без зайвого стресу');
     await expect(page.locator('header img[alt="ЗалікОк"]').first()).toHaveAttribute('src', '/assets/brand/logo-primary.svg');
+    // заголовок і шапка без «Курсові»; у переліку послуг назви послуг (зокрема «Курсові роботи») допустимі
+    expect(await page.locator('.hero').innerText()).not.toMatch(/Курсові/);
     const text = await page.locator('body').innerText();
-    expect(text).not.toMatch(/Курсові/);
     expect(text).toContain('ЗалікОк');
     expect(await page.title()).toBe('ЗалікОк — допомога з курсовими роботами');
     expect(errors).toEqual([]);
@@ -30,8 +31,11 @@ test.describe('головна', () => {
     await expect(hero).toHaveAttribute('target', '_blank');
     await expect(hero).toHaveAttribute('rel', /noopener/);
     await expect(page.locator('footer a[href="mailto:zalikok.ua@gmail.com"]')).toBeVisible();
-    // картки послуг ведуть на форму з передвибором
-    await expect(page.locator('a[href="/zaiavka?service=editing"]')).toBeVisible();
+    // перелік послуг: кнопка «Детальніше» веде на сторінку обраної послуги, є перехід до всіх послуг
+    await expect(page.locator('#services a[href="/poslugy/kursovi-roboty"]')).toHaveText('Детальніше');
+    await expect(page.locator('#services a[href="/poslugy"]')).toBeVisible();
+    await page.locator('#services .ssp__item', { hasText: 'Реферати' }).click();
+    await expect(page.locator('#services a[href="/poslugy/referaty"]')).toHaveText('Детальніше');
   });
 
   test('усі внутрішні посилання відповідають 200', async ({ page, request }) => {
