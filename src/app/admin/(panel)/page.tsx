@@ -5,6 +5,7 @@ import { prisma } from '@/lib/server/db';
 import { requireManager } from '@/lib/server/guard';
 import {
   ACTIVE_STATUSES,
+  DONE_STATUSES,
   PRIORITY_LABELS,
   STATUS_LABELS,
   TABS,
@@ -16,7 +17,7 @@ import {
 import { todayInKyiv } from '@/lib/kyiv-date';
 import { findPrice } from '@/lib/prices';
 import { CONTACT_LABELS, SERVICE_LABELS, type ContactMethod, type Service } from '@/lib/validation';
-import { RowLinks } from './RowLinks';
+import { CopyButton } from './CopyButton';
 
 type SP = { q?: string; tab?: string; from?: string; to?: string; sort?: string; page?: string };
 const PAGE_SIZE = 25;
@@ -58,7 +59,7 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
   const whereNoTab = { ...where };
   delete whereNoTab.status;
 
-  const [rows, total, grouped] = await Promise.all([
+  const [rows, total, grouped, money] = await Promise.all([
     prisma.request.findMany({
       where,
       orderBy,
@@ -86,7 +87,20 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
     }),
     prisma.request.count({ where }),
     prisma.request.groupBy({ by: ['status'], where: whereNoTab, _count: { _all: true } }),
+    prisma.request.findMany({ where: { estimatedPrice: { not: null } }, select: { status: true, estimatedPrice: true, prepayment: true } }),
   ]);
+  // Підсумки для верхньої панелі: за всіма заявками, незалежно від фільтрів
+  let earned = 0;
+  let toPay = 0;
+  for (const m of money) {
+    const price = toNum(m.estimatedPrice) ?? 0;
+    if (DONE_STATUSES.includes(m.status)) earned += price;
+    else if (ACTIVE_STATUSES.includes(m.status)) toPay += Math.max(0, price - (toNum(m.prepayment) ?? 0));
+  }
+  const countAll = (key: string) => {
+    const st = tabStatuses(key);
+    return grouped.filter((g) => !st || st.includes(g.status)).reduce((n, g) => n + g._count._all, 0);
+  };
   const countFor = (key: string) => {
     const st = tabStatuses(key);
     return grouped.filter((g) => !st || st.includes(g.status)).reduce((n, g) => n + g._count._all, 0);
@@ -103,6 +117,26 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <h1 className="admin-h1">Заявки ({total})</h1>
+
+      <ul className="admin-kpis admin-kpis--top">
+        <li className="admin-kpi">
+          <span>Усього заявок</span>
+          <strong>{countAll('all')}</strong>
+        </li>
+        <li className="admin-kpi">
+          <span>Нові та в роботі</span>
+          <strong>{countAll('new') + countAll('work')}</strong>
+        </li>
+        <li className="admin-kpi admin-kpi--money">
+          <span>Загальний заробіток</span>
+          <strong>{formatMoney(earned)}</strong>
+        </li>
+        <li className="admin-kpi admin-kpi--money">
+          <span>Залишок до сплати (в роботі)</span>
+          <strong>{formatMoney(toPay)}</strong>
+        </li>
+      </ul>
+
 
       <nav className="admin-tabs" aria-label="Тип заявок">
         {TABS.map((t) => (
@@ -146,69 +180,90 @@ export default async function RequestsPage({ searchParams }: { searchParams: Pro
         </button>
       </form>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table admin-table--rows">
-          <caption className="sr-only">Список заявок</caption>
-          <thead>
-            <tr>
-              <th scope="col">Номер</th>
-              <th scope="col">Послуга</th>
-              <th scope="col">Тема</th>
-              <th scope="col">Контакт</th>
-              <th scope="col">Дедлайн</th>
-              <th scope="col">Пріоритет</th>
-              <th scope="col">Вартість</th>
-              <th scope="col">Статус</th>
-              <th scope="col">Створено</th>
-              <th scope="col">Сповіщення</th>
-            </tr>
-          </thead>
-          <RowLinks>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={10}>Заявок за цими умовами немає.</td>
-              </tr>
-            )}
-            {rows.map((r) => {
-              const price = toNum(r.estimatedPrice);
-              const left = remaining(price, toNum(r.prepayment));
-              const due = r.dueDate ?? r.deadline;
-              const overdue = ACTIVE_STATUSES.includes(r.status) && due.toISOString().slice(0, 10) < today;
-              const work = findPrice(r.workType)?.title;
-              return (
-                <tr key={r.id} data-href={`/admin/requests/${r.id}`} className="admin-row">
-                  <td>
-                    <Link href={`/admin/requests/${r.id}`}>{r.publicReference}</Link>
-                  </td>
-                  <td>
+      <ul className="admin-rows">
+        {rows.length === 0 && <li className="admin-empty">Заявок за цими умовами немає.</li>}
+        {rows.map((r, i) => {
+          const price = toNum(r.estimatedPrice);
+          const pre = toNum(r.prepayment) ?? 0;
+          const left = remaining(price, pre);
+          const pct = price ? Math.min(100, Math.round((pre / price) * 100)) : 0;
+          const full = price !== null && pre > 0 && left === 0;
+          const active = ACTIVE_STATUSES.includes(r.status);
+          const due = r.dueDate ?? r.deadline;
+          const days = Math.round((Date.parse(`${due.toISOString().slice(0, 10)}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+          const chip = days < 0 ? `прострочено ${-days} дн.` : days === 0 ? 'сьогодні' : `через ${days} дн.`;
+          const chipClass = days < 0 ? 'admin-dl--bad' : days <= 3 ? 'admin-dl--soon' : '';
+          const work = findPrice(r.workType)?.title;
+          const group =
+            r.status === 'new' ? 'new' : r.status === 'done' || r.status === 'closed' ? 'done' : r.status === 'failed' || r.status === 'cancelled' ? 'failed' : 'work';
+          const method = CONTACT_LABELS[r.contactMethod as ContactMethod] ?? r.contactMethod;
+          return (
+            <li key={r.id} className={`admin-rowcard admin-rowcard--${group}`} style={{ ['--i' as string]: Math.min(i, 12) }}>
+              <span className="admin-rowcard__stripe" aria-hidden="true" />
+              <div className="admin-rowcard__mid">
+                <div className="admin-rowcard__top">
+                  <Link href={`/admin/requests/${r.id}`} className="admin-rowcard__num">
+                    № {r.publicReference}
+                  </Link>
+                  <span className={`admin-status admin-status--${r.status}`}>{STATUS_LABELS[r.status]}</span>
+                  {r.priority > 0 && (
+                    <strong className={`admin-prio admin-prio--${r.priority}`}>
+                      {r.priority === 2 ? '🔥' : '⚑'} {PRIORITY_LABELS[r.priority]}
+                    </strong>
+                  )}
+                  <small className="admin-rowcard__created">
+                    {r.createdAt.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv', dateStyle: 'short', timeStyle: 'short' })}
+                    {r.outbox.length > 0 && <strong className="admin-badge admin-badge--bad">Сповіщення: помилка</strong>}
+                  </small>
+                </div>
+                <h3 className="admin-rowcard__topic">{r.topic || (r.topicUnknown ? 'Тему ще не визначено' : '—')}</h3>
+                <div className="admin-rowcard__meta">
+                  <span>
                     {SERVICE_LABELS[r.service as Service] ?? r.service}
-                    {work && <small className="admin-sub">{work}</small>}
-                  </td>
-                  <td className="admin-topic">{r.topic || (r.topicUnknown ? 'Ще не визначено' : '—')}</td>
-                  <td>
-                    {r.contact}
-                    <small className="admin-sub">{CONTACT_LABELS[r.contactMethod as ContactMethod] ?? r.contactMethod}</small>
-                  </td>
-                  <td>
-                    <span className={overdue ? 'admin-badge admin-badge--bad' : undefined}>{dmy(r.dueDate ?? r.deadline)}</span>
-                    <small className="admin-sub">{r.dueDate ? `клієнт: ${dmy(r.deadline)}` : 'дедлайн клієнта'}</small>
-                  </td>
-                  <td>{r.priority > 0 ? <strong className={`admin-prio admin-prio--${r.priority}`}>{PRIORITY_LABELS[r.priority]}</strong> : '—'}</td>
-                  <td>
-                    {formatMoney(price)}
-                    {price !== null && r.prepayment !== null && <small className="admin-sub">залишок {formatMoney(left)}</small>}
-                  </td>
-                  <td>
-                    <span className={`admin-status admin-status--${r.status}`}>{STATUS_LABELS[r.status]}</span>
-                  </td>
-                  <td>{r.createdAt.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv', dateStyle: 'short', timeStyle: 'short' })}</td>
-                  <td>{r.outbox.length ? <strong className="admin-badge admin-badge--bad">Помилка</strong> : '—'}</td>
-                </tr>
-              );
-            })}
-          </RowLinks>
-        </table>
-      </div>
+                    {work ? ` · ${work}` : ''}
+                  </span>
+                  <span className="admin-rowcard__contact">
+                    {r.contact} <small>({method})</small>
+                    <CopyButton value={r.contact} label={r.contact} />
+                  </span>
+                  <span className="admin-rowcard__dl">
+                    {dmy(due)}
+                    {active && <span className={`admin-dl ${chipClass}`}>{chip}</span>}
+                    <small>{r.dueDate ? 'дедлайн виконання' : 'дедлайн клієнта'}</small>
+                  </span>
+                </div>
+              </div>
+              <div className="admin-rowcard__price">
+                {price === null ? (
+                  <span className="admin-price admin-price--none">вартість не вказана</span>
+                ) : (
+                  <>
+                    <span className="admin-price">{formatMoney(price)}</span>
+                    <div className="admin-pay">
+                      <div className={`admin-pay__bar${full ? '' : ' admin-pay__bar--part'}`} role="img" aria-label={`Оплачено ${pct}%`}>
+                        <i style={{ ['--w' as string]: `${pct}%` }} />
+                      </div>
+                      <small>
+                        {pre > 0 ? (
+                          full ? (
+                            <b>✓ Оплачено повністю</b>
+                          ) : (
+                            <>
+                              внесено <b>{formatMoney(pre)}</b> · залишок <b>{formatMoney(left)}</b>
+                            </>
+                          )
+                        ) : (
+                          'передоплати ще немає'
+                        )}
+                      </small>
+                    </div>
+                  </>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
       {pages > 1 && (
         <nav className="admin-pager" aria-label="Сторінки">

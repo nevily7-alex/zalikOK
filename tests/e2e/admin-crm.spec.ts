@@ -43,13 +43,16 @@ test.describe('адмінка: заявки, оплата, дедлайн, ст�
     await expect(page).toHaveURL(/tab=new/);
     await page.fill('#q', reference);
     await page.getByRole('button', { name: 'Застосувати' }).click();
-    await expect(page.getByRole('columnheader', { name: 'Контакт' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Тема' })).toBeVisible();
-    const row = page.locator('tr.admin-row', { hasText: reference });
+    const row = page.locator('li.admin-rowcard', { hasText: reference });
+    // у картці є тема, контакт (із кнопкою копіювання), дедлайн з чіпом і підсумки зверху
     await expect(row).toContainText('Тема для перевірки CRM');
+    await expect(row).toContainText('@e2e_');
+    await expect(row.getByRole('button', { name: /Скопіювати/ })).toHaveCount(1);
+    await expect(row).toContainText(/через \d+ дн\./);
+    await expect(page.getByText('Загальний заробіток').first()).toBeVisible();
 
-    // рядок відкривається кліком по будь-якій клітинці, не лише по номеру
-    await row.locator('td').nth(2).click();
+    // картка відкривається кліком у будь-якому місці, не лише по номеру
+    await row.locator('.admin-rowcard__topic').click({ force: true }); // клік потрапляє на розтягнуте посилання картки
     await expect(page).toHaveURL(new RegExp(`/admin/requests/${requestId}$`));
 
     // вартість, передоплата → залишок
@@ -81,7 +84,7 @@ test.describe('адмінка: заявки, оплата, дедлайн, ст�
 
     // у списку тепер у «Виконаних»
     await page.goto(`/admin?tab=done&q=${reference}`);
-    await expect(page.locator('tr.admin-row', { hasText: reference })).toContainText('Виконано');
+    await expect(page.locator('li.admin-rowcard', { hasText: reference })).toContainText('Виконано');
 
     // статистика
     await page.goto('/admin/stats');
