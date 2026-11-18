@@ -52,7 +52,7 @@ export function Header({ nav, cta }: { nav: NavItem[]; cta: string }) {
           ))}
         </nav>
         <Link
-          href="/ceny"
+          href="/zaiavka"
           className="btn btn-primary btn-sm site-header__cta"
           onClick={() => track('estimate_cta_click', { placement: 'header' })}
         >
@@ -95,7 +95,7 @@ export function Header({ nav, cta }: { nav: NavItem[]; cta: string }) {
             ))}
           </nav>
           <Link
-            href="/ceny"
+            href="/zaiavka"
             className="btn btn-primary btn-block"
             onClick={() => {
               track('estimate_cta_click', { placement: 'drawer' });

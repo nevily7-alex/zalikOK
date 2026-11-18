@@ -7,15 +7,17 @@ test.beforeEach(async ({ context }) => {
 });
 
 test.describe('прайс і калькулятор', () => {
-  test('кнопки «Дізнатися вартість» ведуть до розділу вартості', async ({ page }) => {
+  test('кнопки «Замовити роботу» на головній ведуть одразу до форми заявки', async ({ page }) => {
     await page.goto('/');
-    const hrefs = await page
-      .getByRole('link', { name: 'Дізнатися вартість' })
-      .evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+    const hrefs = await page.getByRole('link', { name: 'Замовити роботу' }).evaluateAll((els) => els.map((e) => e.getAttribute('href')));
     expect(hrefs.length).toBeGreaterThanOrEqual(2);
-    expect(hrefs.every((h) => h === '/ceny')).toBe(true);
-    await page.getByRole('link', { name: 'Дізнатися вартість' }).first().click();
-    await expect(page).toHaveURL(/\/ceny$/);
+    expect(hrefs.every((h) => h === '/zaiavka')).toBe(true);
+    await page.getByRole('link', { name: 'Замовити роботу' }).first().click();
+    await expect(page).toHaveURL(/\/zaiavka$/);
+  });
+
+  test('сторінка вартості з калькулятором доступна напряму', async ({ page }) => {
+    await page.goto('/ceny');
     await expect(page.locator('h1')).toHaveText('Вартість і послуги');
     await expect(page.locator('#calculator')).toBeVisible();
   });

@@ -31,7 +31,7 @@ export function Hero() {
         <p className="hero__lead">{hero.description}</p>
         <div className="hero__actions">
           <TrackedLink
-            href="/ceny"
+            href="/zaiavka"
             className="btn btn-primary"
             event="estimate_cta_click"
             payload={{ placement: 'hero' }}

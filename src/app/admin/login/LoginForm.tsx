@@ -18,6 +18,7 @@ export function LoginForm() {
     const { error: err } = await authClient.signIn.email({
       email: String(data.get('email') ?? ''),
       password: String(data.get('password') ?? ''),
+      rememberMe: data.get('remember') === 'on',
     });
     setBusy(false);
     if (err) {
@@ -29,15 +30,19 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="admin-login__form" aria-busy={busy}>
+    <form method="post" action="/admin/login" onSubmit={onSubmit} className="admin-login__form" aria-busy={busy}>
       <div className="field">
         <label htmlFor="email">E-mail</label>
-        <input id="email" name="email" type="email" autoComplete="username" required />
+        <input id="email" name="email" type="email" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
       </div>
       <div className="field">
         <label htmlFor="password">Пароль</label>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
+      <label className="check">
+        <input type="checkbox" name="remember" defaultChecked />
+        <span>Запам’ятати мене на цьому пристрої</span>
+      </label>
       {error && (
         <p className="form-alert" role="alert">
           {error}
