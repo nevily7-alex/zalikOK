@@ -104,14 +104,13 @@ test.describe('мобільна навігація', () => {
     await expect(button).toBeFocused();
   });
 
-  test('drawer: «Вартість» відкриває прайс, «Послуги» веде до секції; меню закривається', async ({ page }) => {
+  test('drawer: «Вартість» відкриває прайс, «Послуги» веде до розділу; меню закривається', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Відкрити меню' }).click();
     await page.getByRole('navigation', { name: 'Мобільна навігація' }).getByRole('link', { name: 'Послуги' }).click();
     await expect(page.locator('dialog.drawer')).toBeHidden();
-    await expect(page).toHaveURL(/#services$/);
-    const top = await page.locator('#services-title').evaluate((el) => el.getBoundingClientRect().top);
-    expect(top).toBeGreaterThanOrEqual(60); // не ховається під sticky header
+    await expect(page).toHaveURL(/\/poslugy$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Послуги' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Відкрити меню' }).click();
     await page.getByRole('navigation', { name: 'Мобільна навігація' }).getByRole('link', { name: 'Вартість' }).click();

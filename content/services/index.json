@@ -1,0 +1,92 @@
+[
+ {
+  "slug": "kursovi-roboty",
+  "title": "Курсові роботи",
+  "priceId": "kursova"
+ },
+ {
+  "slug": "dyplomni-roboty",
+  "title": "Дипломні роботи",
+  "priceId": "dyplomna"
+ },
+ {
+  "slug": "magisterski-roboty",
+  "title": "Магістерські роботи",
+  "priceId": "magisterska"
+ },
+ {
+  "slug": "referaty",
+  "title": "Реферати",
+  "priceId": "referat"
+ },
+ {
+  "slug": "kontrolni-roboty",
+  "title": "Контрольні роботи",
+  "priceId": "kontrolna"
+ },
+ {
+  "slug": "zvity-z-praktyky",
+  "title": "Звіти з практики",
+  "priceId": "zvit-praktyka"
+ },
+ {
+  "slug": "praktychni-roboty",
+  "title": "Практичні роботи",
+  "priceId": "praktychna"
+ },
+ {
+  "slug": "domashni-zavdannia",
+  "title": "Домашні завдання",
+  "priceId": "domashnie"
+ },
+ {
+  "slug": "dopovidi-do-zakhystu",
+  "title": "Доповіді до захисту",
+  "priceId": "dopovid"
+ },
+ {
+  "slug": "prezentatsii",
+  "title": "Презентації",
+  "priceId": "prezentatsiya"
+ },
+ {
+  "slug": "avtoreferaty",
+  "title": "Автореферати",
+  "priceId": "avtoreferat"
+ },
+ {
+  "slug": "dysertatsii",
+  "title": "Дисертації",
+  "priceId": "dysertatsiya"
+ },
+ {
+  "slug": "statti-do-dysertatsii",
+  "title": "Статті до дисертації",
+  "priceId": "stattya"
+ },
+ {
+  "slug": "pereklad-tekstiv",
+  "title": "Переклад текстів",
+  "priceId": "pereklad"
+ },
+ {
+  "slug": "motyvatsiinyi-lyst",
+  "title": "Мотиваційний лист",
+  "priceId": "motyvatsiynyi-lyst"
+ },
+ {
+  "slug": "poiasniuvalna-zapyska",
+  "title": "Пояснювальна записка",
+  "priceId": null
+ },
+ {
+  "slug": "dyplom-mba",
+  "title": "Диплом MBA",
+  "priceId": null
+ },
+ {
+  "slug": "perevirka-orfohrafii",
+  "title": "Перевірка орфографії",
+  "priceId": "perevirka-tekstu"
+ }
+]

@@ -52,9 +52,9 @@ function defaults(typeId: string): State {
 }
 
 /** Приблизний розрахунок за тарифною сіткою (content/tariffs.json). Остаточну вартість погоджує менеджер. */
-export function PriceCalculator() {
+export function PriceCalculator({ initialType = '' }: { initialType?: string } = {}) {
   const id = useId();
-  const [s, setS] = useState<State>(defaults(''));
+  const [s, setS] = useState<State>(defaults(initialType));
   const [minDate] = useState(() => todayInKyiv());
   const t = getTariff(s.typeId);
   const price = findPrice(s.typeId);
