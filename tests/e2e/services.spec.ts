@@ -47,4 +47,12 @@ test.describe('розділ «Послуги»', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('.svc-faq__item').first()).toHaveAttribute('open', '');
   });
+  test('сторінка послуги без горизонтального скролу на 320px і 1440px', async ({ page }) => {
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/poslugy/kursovi-roboty');
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow, `ширина ${width}`).toBeLessThanOrEqual(0);
+    }
+  });
 });
