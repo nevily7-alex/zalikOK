@@ -11,7 +11,7 @@ const role = process.env.ADMIN_ROLE ?? 'manager';
 const name = process.env.ADMIN_NAME ?? 'Менеджер';
 
 if (!email || !password) throw new Error('Потрібні ADMIN_EMAIL і ADMIN_PASSWORD');
-if (password.length < 12) throw new Error('Пароль має містити щонайменше 12 символів');
+if (password.length < 12 && process.env.ADMIN_ALLOW_WEAK !== '1') throw new Error('Пароль має містити щонайменше 12 символів (або ADMIN_ALLOW_WEAK=1 на власну відповідальність)');
 if (!['manager', 'admin', 'user'].includes(role)) throw new Error('ADMIN_ROLE: manager | admin | user');
 
 const ctx = await getAuth().$context;

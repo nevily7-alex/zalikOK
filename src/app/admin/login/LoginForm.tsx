@@ -15,8 +15,10 @@ export function LoginForm() {
     const data = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
+    // Логін без «@» (наприклад, admin) відповідає службовій адресі admin@admin.local
+    const login = String(data.get('email') ?? '').trim();
     const { error: err } = await authClient.signIn.email({
-      email: String(data.get('email') ?? ''),
+      email: login.includes('@') ? login : `${login}@admin.local`,
       password: String(data.get('password') ?? ''),
       rememberMe: data.get('remember') === 'on',
     });
@@ -32,8 +34,8 @@ export function LoginForm() {
   return (
     <form method="post" action="/admin/login" onSubmit={onSubmit} className="admin-login__form" aria-busy={busy}>
       <div className="field">
-        <label htmlFor="email">E-mail</label>
-        <input id="email" name="email" type="email" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
+        <label htmlFor="email">Логін або e-mail</label>
+        <input id="email" name="email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
       </div>
       <div className="field">
         <label htmlFor="password">Пароль</label>
