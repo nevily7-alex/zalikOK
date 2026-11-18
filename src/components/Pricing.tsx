@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { Icon } from './Icon';
-import { PriceCalculator } from './PriceCalculator';
+import { PricingExplorer } from './PricingExplorer';
 import { SectionTitle } from './SectionTitle';
 import { content } from '@/lib/content';
 
@@ -22,20 +21,7 @@ export function Pricing() {
           </li>
         ))}
       </ul>
-      <div className="pricing-more">
-        <PriceCalculator />
-        <div className="pricing-more__text">
-          <h3>Повний прайс</h3>
-          <p>
-            Усі види робіт і стартові ціни зібрано на окремій сторінці. Оберіть потрібну позицію й одразу перейдіть до
-            заявки.
-          </p>
-          <Link href="/ceny" className="btn btn-primary">
-            Дивитися весь прайс
-            <Icon name="arrow-right" />
-          </Link>
-        </div>
-      </div>
+      <PricingExplorer />
     </section>
   );
 }

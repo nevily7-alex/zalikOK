@@ -19,22 +19,78 @@ test.describe('прайс і калькулятор', () => {
     await expect(page.locator('#calculator')).toBeVisible();
   });
 
-  test('головна без довгого списку: калькулятор і посилання на повний прайс', async ({ page }) => {
+  test('головна: прайс за вкладками (макет C), калькулятор збоку; видно лише одну групу', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('#pricing .price-row')).toHaveCount(0);
-    await page.getByRole('link', { name: 'Дивитися весь прайс' }).click();
-    await expect(page).toHaveURL(/\/ceny$/);
+    const tabs = page.locator('#pricing [role="tab"]');
+    await expect(tabs).toHaveCount(4);
+    await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#pricing .price-row')).toHaveCount(16); // «Навчальні роботи»
+    await expect(page.locator('#pricing #calculator')).toBeVisible();
+    await expect(page.getByText('Надішліть тему та вимоги, щоб отримати індивідуальний розрахунок.')).toHaveCount(0);
+    // калькулятор праворуч від списку на широкому екрані
+    const list = await page.locator('.price-explorer__list').boundingBox();
+    const calc = await page.locator('#calculator').boundingBox();
+    expect(calc!.x).toBeGreaterThan(list!.x + list!.width - 1);
   });
 
-  test('прайс: 31 позиція з цінами «від», без виключених послуг і обіцянок уникальності', async ({ page }) => {
+  test('вкладки: перемикання мишею й клавіатурою (← → Home End), aria', async ({ page }) => {
     await page.goto('/ceny');
-    const rows = page.locator('.price-row');
-    await expect(rows).toHaveCount(31);
+    const tabs = page.getByRole('tab');
+    await tabs.nth(1).click();
+    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toContainText('Дисертація');
+    await expect(page.locator('.price-row')).toHaveCount(3);
+    await page.keyboard.press('ArrowRight');
+    await expect(tabs.nth(2)).toBeFocused();
+    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('.price-row')).toHaveCount(7);
+    await page.keyboard.press('End');
+    await expect(tabs.nth(3)).toBeFocused();
+    await page.keyboard.press('ArrowRight'); // з останньої — на першу
+    await expect(tabs.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('ArrowLeft'); // з першої — на останню
+    await expect(tabs.nth(3)).toHaveAttribute('aria-selected', 'true');
+    const panelId = await tabs.nth(3).getAttribute('aria-controls');
+    await expect(page.locator(`#${panelId}`)).toBeVisible();
+    // неактивна вкладка поза порядком табуляції (roving tabindex)
+    await expect(tabs.nth(0)).toHaveAttribute('tabindex', '-1');
+  });
+
+  test('прайс: 31 позиція у чотирьох групах, ціни «від», без виключених послуг і обіцянок уникальності', async ({ page }) => {
+    await page.goto('/ceny');
+    const tabs = page.getByRole('tab');
+    let total = 0;
+    let allText = '';
+    for (let i = 0; i < 4; i++) {
+      await tabs.nth(i).click();
+      total += await page.locator('.price-row').count();
+      allText += await page.locator('main').innerText();
+    }
+    expect(total).toBe(31);
+    await tabs.nth(0).click();
     await expect(page.locator('.price-row', { hasText: 'Курсова робота' }).first()).toContainText('від 1 200 грн');
+    await tabs.nth(1).click();
     await expect(page.locator('.price-row', { hasText: 'Дисертація' }).first()).toContainText('від 50 000 грн');
-    const text = await page.locator('main').innerText();
-    for (const banned of ['Підвищення унікальності', 'іспит', 'Тести']) expect(text).not.toContain(banned);
-    expect(text).not.toMatch(/\d+\s?%/);
+    for (const banned of ['Підвищення унікальності', 'іспит', 'Тести']) expect(allText).not.toContain(banned);
+    expect(allText).not.toMatch(/\d+\s?%/);
+  });
+
+  test('рядок прайсу веде до форми з передвибраним видом роботи', async ({ page }) => {
+    await page.goto('/ceny');
+    await page.getByRole('tab', { name: /Тексти й мови/ }).click();
+    await page.locator('.price-row', { hasText: 'Переклад' }).click();
+    await expect(page).toHaveURL(/\/zaiavka\?type=pereklad$/);
+    await expect(page.locator('#f-workType')).toHaveAttribute('data-value', 'pereklad');
+  });
+
+  test('телефон: калькулятор над прайсом, без горизонтального скролу', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/ceny');
+    const calc = await page.locator('#calculator').boundingBox();
+    const tabs = await page.locator('.price-tabs').boundingBox();
+    expect(calc!.y).toBeLessThan(tabs!.y);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
   });
 
   test('калькулятор: приклад із тарифної моделі та перехід до форми з підставленими параметрами', async ({ page }) => {

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { PriceCalculator } from '@/components/PriceCalculator';
-import { PriceList } from '@/components/PriceList';
+import { PricingExplorer } from '@/components/PricingExplorer';
 import { canonicalFor } from '@/lib/seo';
 import { prices } from '@/lib/prices';
 
@@ -18,10 +17,7 @@ export default function PricesPage() {
         <h1 className="h1-form">Вартість і послуги</h1>
         <p className="section-lead">{prices.note}</p>
       </header>
-      <div className="price-layout">
-        <PriceCalculator />
-        <PriceList />
-      </div>
+      <PricingExplorer />
     </div>
   );
 }

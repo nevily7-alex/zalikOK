@@ -640,7 +640,7 @@ body:has(dialog[open]) {
   gap: 4px;
 }
 
-/* ---------- Прайс і калькулятор ---------- */
+/* ---------- Прайс і калькулятор (макет «Вкладки») ---------- */
 .prices-page {
   padding-block: 32px 24px;
 }
@@ -650,27 +650,11 @@ body:has(dialog[open]) {
   gap: 8px;
   margin-bottom: 24px;
 }
-.price-layout {
-  display: grid;
-  gap: 24px;
-}
-.pricing-more {
-  display: grid;
-  gap: 24px;
+.pricing-factors {
   margin-top: 24px;
-  align-items: start;
 }
-.pricing-more__text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 24px;
-}
-.pricing-more__text p {
-  color: var(--color-muted);
-  max-width: 48ch;
-}
+
+/* Калькулятор */
 .calc {
   display: flex;
   flex-direction: column;
@@ -694,27 +678,60 @@ body:has(dialog[open]) {
   letter-spacing: -0.03em;
   margin-bottom: 6px;
 }
-.price-groups {
+
+/* Прайс: вкладки груп + список + калькулятор збоку */
+.price-explorer {
   display: grid;
-  gap: 20px;
+  gap: 24px;
+  margin-top: 24px;
   align-items: start;
 }
-.price-group {
-  padding: 20px 20px 12px;
+.price-explorer > .calc {
+  order: -1; /* на вузьких екранах калькулятор зверху: це головна дія */
+}
+.price-explorer__list {
+  min-width: 0;
+}
+.price-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.price-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+.price-tab:hover {
+  border-color: #cdc6b2;
+}
+.price-tab[aria-selected='true'] {
+  background: var(--color-primary);
+  border-color: var(--color-text);
+}
+.price-tab__n {
+  font-weight: 600;
+  opacity: 0.6;
+}
+.price-panel {
+  padding: 20px 20px 8px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
 }
-.price-group__head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.price-group__head h2 {
-  font-size: 20px;
-  line-height: 26px;
-  letter-spacing: -0.02em;
+.price-panel__rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 .price-row {
   display: flex;
@@ -729,11 +746,6 @@ body:has(dialog[open]) {
   font-size: 15px;
   line-height: 21px;
 }
-.price-group li + li .price-row {
-  border-top: 1px solid var(--color-border);
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
 .price-row strong {
   white-space: nowrap;
   font-family: var(--font-heading);
@@ -741,32 +753,31 @@ body:has(dialog[open]) {
 .price-row:hover {
   background: var(--color-soft-yellow);
 }
-.pricing-factors {
-  margin-top: 24px;
+.price-panel__rows li {
+  border-bottom: 1px solid var(--color-border);
+}
+.price-panel__rows li:last-child {
+  border-bottom-color: transparent;
 }
 @media (min-width: 768px) {
-  .price-groups {
-    display: block;
-    column-count: 2;
-    column-gap: 20px;
+  .price-panel__rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 34px;
   }
-  .price-group {
-    break-inside: avoid;
-    margin-bottom: 20px;
+  /* у нижньому рядку сітки лінія не потрібна */
+  .price-panel__rows li:nth-last-child(2):nth-child(odd) {
+    border-bottom-color: transparent;
   }
 }
 @media (min-width: 1024px) {
-  .price-layout {
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  .price-explorer {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
     gap: 40px;
   }
-  .prices-page .calc {
+  .price-explorer > .calc {
+    order: 0;
     position: sticky;
     top: calc(var(--header-h) + 16px);
-  }
-  .pricing-more {
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-    gap: 40px;
   }
 }
 
