@@ -1,4 +1,5 @@
 import { Icon } from './Icon';
+import { Art } from './ServiceArt';
 import { TrackedLink } from './TrackedLink';
 import { getSiteConfig, telegramHref } from '@/lib/site-config';
 
@@ -7,7 +8,8 @@ export function CtaBanner() {
   const tg = telegramHref(getSiteConfig());
   return (
     <section id="request" className="section container" aria-labelledby="cta-title">
-      <div className="cta-banner">
+      <div className="cta-banner cta-banner--art rv">
+        <Art name="laptop" className="cta-banner__art" />
         <div>
           <h2 id="cta-title">Готові розпочати?</h2>
           <p>Заповніть коротку заявку з трьох кроків: робота, деталі, контакт. Орієнтовну ціну побачите одразу.</p>

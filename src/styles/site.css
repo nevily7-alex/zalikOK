@@ -1201,3 +1201,76 @@ body:has(dialog[open]) {
   .svc-sjm__row { width: auto; flex-wrap: wrap; padding-inline: var(--gutter); }
   .svc-sjm__grp { flex-wrap: wrap; }
 }
+
+/* ---------- Головна: анімації, ілюстрації, стильніші блоки ---------- */
+.rv { transition: opacity 0.6s ease, transform 0.6s ease; transition-delay: calc(var(--d, 0) * 90ms); }
+.rv-js .rv:not(.in) { opacity: 0; transform: translateY(24px); }
+.rv-stagger > .rv:nth-child(2) { --d: 1; }
+.rv-stagger > .rv:nth-child(3) { --d: 2; }
+.rv-stagger > .rv:nth-child(4) { --d: 3; }
+
+/* hero */
+.hero { position: relative; }
+.hero__mark { background: linear-gradient(transparent 10%, var(--color-primary) 10%, var(--color-primary) 90%, transparent 90%); color: inherit; padding: 0 0.14em; border-radius: 0.2em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.hero__art { position: relative; isolation: isolate; }
+.hero__art::before { content: ''; position: absolute; z-index: -1; inset: 6% 8% 4% 12%; border-radius: 50%; background: var(--color-soft-yellow); }
+.hero-fc { display: none; position: absolute; z-index: 2; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 20px; padding: 12px 16px; box-shadow: 0 14px 34px rgb(36 36 36 / 0.1); font-family: var(--font-heading); font-weight: 800; font-size: 15px; line-height: 1.3; }
+.hero-fc small { display: block; color: var(--color-muted); font-family: var(--font-body); font-weight: 500; font-size: 13px; }
+.hero-fc--y { background: var(--color-primary); border-color: var(--color-primary); right: 4%; top: 2%; }
+.hero-fc--y small { color: var(--color-text); }
+.hero-fc--l { left: 2%; top: 46%; }
+.hero-fc--r { right: 8%; bottom: 8%; }
+@media (min-width: 640px) { .hero-fc { display: block; } }
+.home-ticker { padding-block: 8px 20px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes home-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes home-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @keyframes home-sway { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(0.6deg); } }
+  @keyframes home-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes home-spin { to { transform: rotate(360deg); } }
+  .hero__text > * { animation: home-up 0.7s ease both; }
+  .hero__text > :nth-child(2) { animation-delay: 0.1s; }
+  .hero__text > :nth-child(3) { animation-delay: 0.2s; }
+  .hero__text > :nth-child(4) { animation-delay: 0.3s; }
+  .hero__art img { animation: fade-in 250ms ease-out both, home-sway 10s ease-in-out 0.4s infinite; }
+  .hero__art::before { animation: home-pulse 9s ease-in-out infinite; }
+  .hero-fc { animation: home-float 8s ease-in-out infinite; }
+  .hero-fc--l { animation-delay: -2.5s; }
+  .hero-fc--r { animation-delay: -5s; }
+  .section-title .accent { animation: home-spin 18s linear infinite; }
+}
+
+/* процес: картки з ілюстраціями */
+.steps { gap: 20px; }
+.step { padding: 22px; border-radius: var(--radius-card); background: var(--color-surface); border: 1px solid var(--color-border); transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; }
+.step:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgb(36 36 36 / 0.1); border-color: var(--color-primary); }
+.step__head { justify-content: space-between; }
+.step__art { width: 84px; height: 84px; padding: 8px; border-radius: 22px; background: var(--color-soft-yellow); transition: transform 0.3s; }
+.step:hover .step__art { transform: rotate(-6deg) scale(1.08); }
+.step p { max-width: none; }
+@media (min-width: 1024px) {
+  .steps { gap: 48px; }
+  .step:not(:last-child)::after { top: 52px; }
+}
+
+/* послуги */
+.service-card { transition: transform 0.25s, box-shadow 0.25s; }
+.service-card:hover { transform: translateY(-5px); box-shadow: 0 18px 40px rgb(36 36 36 / 0.1); }
+.service-card__art { width: 88px; height: 88px; padding: 8px; border-radius: 24px; background: rgb(255 255 255 / 0.75); transition: transform 0.3s; }
+.service-card:hover .service-card__art { transform: rotate(-6deg) scale(1.08); }
+.services-more { margin-top: 24px; }
+
+/* фактори вартості */
+.factor-card { transition: transform 0.25s, box-shadow 0.25s; }
+.factor-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgb(36 36 36 / 0.08); }
+
+/* заклик */
+.cta-banner.cta-banner--art { position: relative; overflow: hidden; background: var(--color-primary); }
+.cta-banner--art > div { position: relative; z-index: 1; }
+.cta-banner__art { display: none; position: absolute; right: 400px; bottom: -8px; width: 200px; z-index: 0; }
+@media (min-width: 1100px) { .cta-banner__art { display: block; } }
+@media (prefers-reduced-motion: no-preference) { .cta-banner__art { animation: home-float 9s ease-in-out infinite; } }
+.cta-banner--art .btn-primary { background: var(--color-text); color: #fff; }
+.cta-banner--art .btn-primary:hover { background: #000; }
+.cta-banner--art .btn-secondary { background: var(--color-surface); }

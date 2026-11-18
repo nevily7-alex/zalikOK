@@ -44,7 +44,7 @@ export function RecentWorks() {
   };
 
   return (
-    <section id="works" className="section container" aria-labelledby="works-title">
+    <section id="works" className="section container rv" aria-labelledby="works-title">
       <div className="works__head">
         <div>
           <SectionTitle id="works-title">{works.title}</SectionTitle>

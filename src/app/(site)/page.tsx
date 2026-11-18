@@ -5,6 +5,8 @@ import { Process } from '@/components/Process';
 import { CtaBanner } from '@/components/CtaBanner';
 import { RecentWorks } from '@/components/RecentWorks';
 import { Faq } from '@/components/Faq';
+import { Ticker } from '@/components/Ticker';
+import { PageReveal } from '@/components/PageReveal';
 import { SectionTitle } from '@/components/SectionTitle';
 import { content } from '@/lib/content';
 
@@ -29,7 +31,9 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }}
       />
+      <PageReveal />
       <Hero />
+      <Ticker />
       <Process />
       <Services />
       <Pricing />
@@ -37,7 +41,9 @@ export default function HomePage() {
       <CtaBanner />
       <section id="faq" className="section container" aria-labelledby="faq-title">
         <SectionTitle id="faq-title">{content.faq.title}</SectionTitle>
-        <Faq items={content.faq.items} />
+        <div className="rv">
+          <Faq items={content.faq.items} />
+        </div>
       </section>
     </>
   );

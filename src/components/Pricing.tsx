@@ -8,9 +8,9 @@ export function Pricing() {
   return (
     <section id="pricing" className="section container" aria-labelledby="pricing-title">
       <SectionTitle id="pricing-title">{pricing.title}</SectionTitle>
-      <ul className="pricing-factors">
+      <ul className="pricing-factors rv-stagger">
         {pricing.factors.map((f) => (
-          <li key={f.title} className="factor-card">
+          <li key={f.title} className="factor-card rv">
             <span className="icon-circle" aria-hidden="true">
               <Icon name={f.icon} />
             </span>
