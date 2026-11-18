@@ -154,6 +154,7 @@
   font-size: 17px;
   line-height: 27px;
   max-width: 46ch;
+  text-wrap: balance;
 }
 .hero__actions {
   display: flex;
