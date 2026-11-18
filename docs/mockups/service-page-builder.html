@@ -40,7 +40,7 @@ a{color:inherit}
 .nav{display:flex;gap:22px;font-weight:600;font-size:15px}
 .wrap{max-width:1100px;margin:0 auto;padding:0 28px}
 section.blk{padding:56px 0}
-.crumbs{font-size:14px;color:var(--muted);padding-top:22px}
+.crumbs{font-size:14px;color:var(--muted);padding-top:22px;grid-column:1/-1}
 .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:99px;padding:14px 26px;font:800 16px var(--h);text-decoration:none;position:relative;overflow:hidden;transition:transform .2s,background .2s}
 .btn-p{background:var(--primary)}.btn-p:hover{background:var(--primary-hover);transform:translateY(-2px)}
 .btn-d{background:var(--text);color:#fff}
@@ -72,8 +72,8 @@ section.blk{padding:56px 0}
 .hero__cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
 .hero--a .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-block:48px}
 @media(max-width:820px){.hero--a .wrap{grid-template-columns:1fr}.hero__art{display:none}}
-.hero__art{position:relative;height:340px}
-.fc{position:absolute;background:#fff;border:1px solid var(--border);border-radius:20px;padding:14px 18px;box-shadow:0 14px 34px rgb(36 36 36/.1);font-weight:700;font-size:15px;animation:float 5s ease-in-out infinite}
+.hero__art{position:relative;min-height:340px}
+.fc{position:absolute;z-index:2;background:#fff;border:1px solid var(--border);border-radius:20px;padding:14px 18px;box-shadow:0 14px 34px rgb(36 36 36/.1);font-weight:700;font-size:15px;animation:float 5s ease-in-out infinite}
 [data-anim=off] .fc,[data-anim=subtle] .fc{animation:none}
 [data-anim=subtle] .fc{animation:float 8s ease-in-out infinite}
 .fc small{display:block;color:var(--muted);font-weight:500}
@@ -94,6 +94,26 @@ section.blk{padding:56px 0}
 .chip{padding:6px 14px;border-radius:99px;background:rgba(255,255,255,.12);font-size:14px}
 .ring{position:absolute;right:-80px;top:-80px;width:320px;height:320px;border:36px solid var(--primary);border-radius:50%;opacity:.9;animation:spin 30s linear infinite}
 [data-anim=off] .ring{animation:none}
+.ill{display:block;width:100%;height:auto}
+.scene{overflow:visible}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.bob{animation:bob 5s ease-in-out infinite}.bob2{animation:bob 6.5s ease-in-out infinite -2s}.bob3{animation:bob 7s ease-in-out infinite -4s}
+.bob,.bob2,.bob3{transform-box:fill-box}
+[data-anim=off] .bob,[data-anim=off] .bob2,[data-anim=off] .bob3{animation:none}
+[data-anim=subtle] .bob,[data-anim=subtle] .bob2,[data-anim=subtle] .bob3{animation-duration:10s}
+body[data-ill=few] .ill-big{display:none!important}
+.ill-big{margin-top:22px}
+.hero--b .hero__art{display:block;height:auto;max-width:420px;margin:28px auto 0}
+.hero--c .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding-block:48px}
+.hero--c .hero__art{height:auto}
+@media(max-width:820px){.hero--c .wrap{grid-template-columns:1fr}.hero--b .hero__art,.hero--c .hero__art{display:none}}
+.hero__art .scene{position:relative;z-index:0}
+.ic{width:84px!important;height:84px!important;border-radius:22px!important;padding:8px;margin-bottom:16px!important;transition:transform .3s}
+.card:hover .ic{transform:rotate(-6deg) scale(1.08)}
+.ic .ill{width:100%}
+.tier .ill-t{width:96px;margin:-6px 0 4px}
+.cta .ill-c{position:absolute;right:190px;bottom:-6px;width:210px;z-index:0}
+@media(max-width:900px){.cta .ill-c{display:none}}
 /* HIGHLIGHTS */
 .hl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media(max-width:820px){.hl-grid{grid-template-columns:1fr}}
@@ -174,9 +194,9 @@ section.blk{padding:56px 0}
 .cta h2{font-size:clamp(26px,3.4vw,38px);line-height:1.15;max-width:560px}
 .cta p{margin:8px 0 0;max-width:520px}
 .cta--y{background:var(--primary)}
-.cta--y::after{content:"";position:absolute;right:-60px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.35);animation:float 6s ease-in-out infinite}
+.cta--y::after{display:none!important;content:"";position:absolute;right:-60px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.35);animation:float 6s ease-in-out infinite}
 .cta--d{background:var(--graphite);color:#fff}.cta--d p{color:#d1cec5}
-.cta--d::after{content:"";position:absolute;right:-40px;top:-60px;width:240px;height:240px;border-radius:50%;border:30px solid var(--primary);animation:spin 24s linear infinite}
+.cta--d::after{display:none!important;content:"";position:absolute;right:-40px;top:-60px;width:240px;height:240px;border-radius:50%;border:30px solid var(--primary);animation:spin 24s linear infinite}
 [data-anim=off] .cta::after{animation:none}
 .cta>*{position:relative;z-index:1}
 .foot{padding:30px;text-align:center;color:var(--muted);font-size:14px;border-top:1px solid var(--border)}
@@ -189,6 +209,8 @@ section.blk{padding:56px 0}
   <div><h1>Конструктор сторінки послуги</h1><p>Одна структура для всіх 18 послуг: змінюється лише текст. Увімкніть потрібні секції, оберіть вигляд кожної й рівень анімації — праворуч усе оновлюється одразу. Зверху сторінки — приклад «Курсові роботи».</p></div>
   <div class="grp"><div class="grp__head"><b>Анімації</b></div>
     <div class="seg" data-key="anim"><button data-v="off">Вимкнено</button><button data-v="subtle">Спокійні</button><button data-v="lively" aria-pressed="true">Жваві</button></div></div>
+  <div class="grp"><div class="grp__head"><b>Ілюстрації</b></div>
+    <div class="seg" data-key="ill"><button data-v="few">Мінімум (лише іконки)</button><button data-v="many" aria-pressed="true">Багато</button></div></div>
   <div class="grp"><div class="grp__head"><b>1. Шапка</b><button class="sw" data-sec="hero" aria-pressed="true" aria-label="Показати"></button></div>
     <div class="seg" data-key="hero"><button data-v="a" aria-pressed="true">Текст + плаваючі картки</button><button data-v="b">По центру + цифри</button><button data-v="c">Графітова</button></div></div>
   <div class="grp"><div class="grp__head"><b>2. Переваги / умови</b><button class="sw" data-sec="hl" aria-pressed="true" aria-label="Показати"></button></div>
@@ -220,7 +242,7 @@ section.blk{padding:56px 0}
       <div class="stats hero__stats rv d3"><div class="stat"><b data-count="25">25</b><span>сторінок у базовому пакеті</span></div><div class="stat"><b data-count="3">3</b><span>безкоштовні звернення з правками</span></div><div class="stat"><b>50/50</b><span>схема оплати на вибір</span></div></div>
       <div class="chips hero__chips"><span class="chip">Економіка</span><span class="chip">Право</span><span class="chip">Психологія</span><span class="chip">Маркетинг</span></div>
     </div>
-    <div class="hero__art"><div class="blob" style="width:300px;height:300px;right:10px;top:20px"></div>
+    <div class="hero__art"><div data-scene></div>
       <div class="fc y" style="right:20px;top:20px;--rot:3deg">від 1 000 грн<small>базовий пакет, 25 стор.</small></div>
       <div class="fc" style="left:10px;top:110px;--rot:-3deg;animation-delay:-1.5s">Погодження плану<small>до початку роботи</small></div>
       <div class="fc" style="right:50px;top:210px;animation-delay:-3s">3 правки<small>за зауваженнями керівника</small></div></div>
@@ -231,9 +253,9 @@ section.blk{padding:56px 0}
 <section class="blk" data-sec="hl" id="hl"><div class="wrap">
   <h2 class="sec-title rv">Одні й ті самі <mark>умови</mark> для кожної роботи</h2><p class="lead rv d1">Як ми працюємо — коротко, без обіцянок, яких не можемо виконати.</p>
   <div class="hl hl--cards"><div class="hl-grid">
-    <div class="card lift rv"><div class="ic">📝</div><h3>Ціна до початку</h3><p>Менеджер погоджує вартість і строк письмово — після цього починається робота.</p></div>
-    <div class="card lift rv d1"><div class="ic">💬</div><h3>Три правки</h3><p>Три безкоштовні звернення за зауваженнями до початкового завдання.</p></div>
-    <div class="card lift rv d2"><div class="ic">🔒</div><h3>Конфіденційність</h3><p>Файли зберігаються приватно, доступ — лише у менеджера.</p></div></div></div>
+    <div class="card lift rv"><div class="ic" data-i="docs"></div><h3>Ціна до початку</h3><p>Менеджер погоджує вартість і строк письмово — після цього починається робота.</p></div>
+    <div class="card lift rv d1"><div class="ic" data-i="chat"></div><h3>Три правки</h3><p>Три безкоштовні звернення за зауваженнями до початкового завдання.</p></div>
+    <div class="card lift rv d2"><div class="ic" data-i="shield"></div><h3>Конфіденційність</h3><p>Файли зберігаються приватно, доступ — лише у менеджера.</p></div></div></div>
   <div class="hl hl--tl hidden"><div class="tl">
     <div class="tl__i rv"><div class="tl__n">1</div><div><h3>Заявка</h3><p>Тема, методичка, дата здачі — за три короткі кроки.</p></div></div>
     <div class="tl__i rv d1"><div class="tl__n">2</div><div><h3>Погодження ціни</h3><p>Менеджер називає вартість і строк. Нічого не платите, поки не погодите.</p></div></div>
@@ -246,21 +268,21 @@ section.blk{padding:56px 0}
 <section class="blk" data-sec="price" id="price" style="background:var(--neutral)"><div class="wrap">
   <h2 class="sec-title rv">Вартість <mark>курсової</mark></h2>
   <div class="pr pr--calc"><div class="rv"><span class="pr__tag">Орієнтовна стартова ціна</span><div class="pr__price" id="pp">від 1 000 грн</div>
-    <p class="lead" style="margin-top:14px">Для теоретичної роботи на 25 сторінок; кожна наступна сторінка — 25 грн. Практична частина й складність теми можуть змінити вартість.</p><a class="btn btn-p" href="#">Залишити заявку →</a></div>
+    <p class="lead" style="margin-top:14px">Для теоретичної роботи на 25 сторінок; кожна наступна сторінка — 25 грн. Практична частина й складність теми можуть змінити вартість.</p><a class="btn btn-p" href="#">Залишити заявку →</a><div class="ill-big" data-i="calc" style="max-width:190px"></div></div>
     <div class="calc rv d1"><b style="font:800 18px var(--h)">Орієнтовний розрахунок</b>
       <label>Сторінок: <span id="pg">25</span><input type="range" id="rg" min="25" max="80" value="25"></label>
       <label>Складність<select style="padding:10px;border-radius:12px;border:1px solid var(--border)"><option>Базовий ×1,0</option></select></label>
       <div class="res" id="rs">1 000 грн</div></div></div>
   <div class="tiers pr--tiers hidden">
-    <div class="card tier lift rv"><h3>Теоретична</h3><b>від 1 000 грн</b><p>25 сторінок, без практичної частини.</p></div>
-    <div class="card tier top lift rv d1"><span class="badge">Найчастіше</span><h3>З практикою</h3><b>за розрахунком</b><p>Розрахунки, аналіз даних, таблиці.</p></div>
-    <div class="card tier lift rv d2"><h3>Курсовий проект</h3><b>після завдання</b><p>Записка й креслення — оцінює менеджер.</p></div></div>
+    <div class="card tier lift rv"><div class="ill-t" data-i="docs"></div><h3>Теоретична</h3><b>від 1 000 грн</b><p>25 сторінок, без практичної частини.</p></div>
+    <div class="card tier top lift rv d1"><span class="badge">Найчастіше</span><div class="ill-t" data-i="laptop"></div><h3>З практикою</h3><b>за розрахунком</b><p>Розрахунки, аналіз даних, таблиці.</p></div>
+    <div class="card tier lift rv d2"><div class="ill-t" data-i="books"></div><h3>Курсовий проект</h3><b>після завдання</b><p>Записка й креслення — оцінює менеджер.</p></div></div>
 </div></section>
 
 <!-- 4 ARTICLE -->
 <section class="blk" data-sec="art" id="art"><div class="wrap">
   <h2 class="sec-title rv">Курсова робота <mark>на замовлення</mark></h2>
-  <div class="art art--toc"><nav class="toc rv"><a class="on" href="#a1">Що входить</a><a href="#a2">Від чого залежить ціна</a><a href="#a3">Структура</a><a href="#a4">Що потрібно для замовлення</a></nav>
+  <div class="art art--toc"><nav class="toc rv"><a class="on" href="#a1">Що входить</a><a href="#a2">Від чого залежить ціна</a><a href="#a3">Структура</a><a href="#a4">Що потрібно для замовлення</a><div class="ill-big" data-i="books" style="max-width:200px;margin-left:12px"></div></nav>
     <div class="prose">
       <section id="a1" class="rv"><h3>Що входить у написання</h3><p>Вступ з актуальністю, об'єктом, предметом, метою й завданнями у форматі вашої кафедри. Теоретичний розділ на джерелах, які можна перевірити. Висновки, список джерел, оформлення за ДСТУ.</p></section>
       <section id="a2" class="rv"><h3>Від чого залежить ціна</h3><p>Обсяг, складність теми, наявність практичної частини, дедлайн і ваші напрацювання. Точну суму менеджер називає після теми й методички.</p></section>
@@ -273,10 +295,10 @@ section.blk{padding:56px 0}
     <div class="tp"><div class="card"><h3>Структура</h3><p>Титул, зміст, вступ, розділи, висновки, джерела, додатки.</p></div></div>
     <div class="tp"><div class="card"><h3>Що потрібно</h3><p>Методичка, тема, дата здачі, дані для практики.</p></div></div></div>
   <div class="cols art-cards hidden">
-    <div class="card lift rv"><div class="ic">📚</div><h3>Що входить</h3><p>Вступ, розділи, висновки, джерела, оформлення за ДСТУ.</p></div>
-    <div class="card lift rv d1"><div class="ic">💰</div><h3>Від чого залежить ціна</h3><p>Обсяг, складність теми, практична частина, дедлайн.</p></div>
-    <div class="card lift rv d2"><div class="ic">🧩</div><h3>Структура</h3><p>Титул, зміст, вступ, розділи, висновки, джерела.</p></div>
-    <div class="card lift rv d3"><div class="ic">✅</div><h3>Що потрібно</h3><p>Методичка, тема, дата здачі, дані для практики.</p></div></div>
+    <div class="card lift rv"><div class="ic" data-i="books"></div><h3>Що входить</h3><p>Вступ, розділи, висновки, джерела, оформлення за ДСТУ.</p></div>
+    <div class="card lift rv d1"><div class="ic" data-i="calc"></div><h3>Від чого залежить ціна</h3><p>Обсяг, складність теми, практична частина, дедлайн.</p></div>
+    <div class="card lift rv d2"><div class="ic" data-i="steps"></div><h3>Структура</h3><p>Титул, зміст, вступ, розділи, висновки, джерела.</p></div>
+    <div class="card lift rv d3"><div class="ic" data-i="docs"></div><h3>Що потрібно</h3><p>Методичка, тема, дата здачі, дані для практики.</p></div></div>
 </div></section>
 
 <!-- 5 FAQ -->
@@ -289,13 +311,13 @@ section.blk{padding:56px 0}
     <div class="col" style="display:grid;gap:12px"><div class="fq rv"><button>Чи зміниться ціна після розрахунку?<i>+</i></button><div><p>Вона може змінитися, якщо змінилися тема, обсяг чи вимоги. Це погоджується окремо.</p></div></div>
       <div class="fq rv d1"><button>Скільки сторінок буде в роботі?<i>+</i></button><div><p>Скільки потрібно за вашими вимогами. Базовий пакет — 25 сторінок.</p></div></div>
       <div class="fq rv d2"><button>Чи займаєтеся оформленням?<i>+</i></button><div><p>Так, за ДСТУ або вимогами вашого вишу.</p></div></div></div>
-    <aside class="ask hidden"><h3>Не знайшли відповідь?</h3><p>Напишіть менеджеру — відповімо на питання про вашу роботу.</p><a class="btn btn-p" href="#">Написати в Telegram</a></aside>
+    <aside class="ask hidden"><h3>Не знайшли відповідь?</h3><p>Напишіть менеджеру — відповімо на питання про вашу роботу.</p><div class="ill-big" data-i="chat" style="max-width:180px;margin:0 0 16px"></div><a class="btn btn-p" href="#">Написати в Telegram</a></aside>
   </div>
 </div></section>
 
 <!-- 6 SUBJECTS -->
 <section class="blk" data-sec="sj" id="sj"><div class="wrap">
-  <h2 class="sec-title rv">Курсові з вашого <mark>предмета</mark></h2>
+  <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px"><div class="ill-big" data-i="cap" style="width:110px;margin:0"></div><h2 class="sec-title rv" style="margin:0">Курсові з вашого <mark>предмета</mark></h2></div>
   <div class="sj sj--chips rv"><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span></div>
   <div class="sjm sj--marq hidden"><div class="sjm__r"><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span><span>Економіка</span><span>Право</span><span>Психологія</span><span>Маркетинг</span><span>Менеджмент</span><span>Облік і аудит</span><span>Педагогіка</span><span>Фінанси</span></div><div class="sjm__r"><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span><span>Історія</span><span>Екологія</span><span>Туризм</span><span>Філологія</span><span>Програмування</span><span>Соціологія</span><span>Журналістика</span><span>Історія</span><span>Екологія</span><span>Туризм</span></div></div>
   <div class="sjg sj--grid hidden"><span data-e="📈">Економіка</span><span data-e="⚖️">Право</span><span data-e="🧠">Психологія</span><span data-e="📣">Маркетинг</span><span data-e="👥">Менеджмент</span><span data-e="🧮">Облік і аудит</span><span data-e="🎓">Педагогіка</span><span data-e="💶">Фінанси</span></div>
@@ -303,7 +325,7 @@ section.blk{padding:56px 0}
 
 <!-- 7 CTA -->
 <section class="blk" data-sec="cta" id="cta"><div class="wrap">
-  <div class="cta cta--y rv" id="ctabox"><div><h2>Дізнайтеся ціну вашої курсової</h2><p>Заповніть коротку заявку з трьох кроків. Орієнтовну ціну побачите одразу.</p></div><a class="btn btn-d" href="#">Залишити заявку →</a></div>
+  <div class="cta cta--y rv" id="ctabox"><div data-i="laptop" class="ill-c ill-big"></div><div><h2>Дізнайтеся ціну вашої курсової</h2><p>Заповніть коротку заявку з трьох кроків. Орієнтовну ціну побачите одразу.</p></div><a class="btn btn-d" href="#">Залишити заявку →</a></div>
 </div></section>
 <div class="foot">Макет. Тексти — приклад зі сторінки «Курсові роботи»; на сайті для кожної послуги підставляються її власні тексти.</div>
 </main>
@@ -311,13 +333,13 @@ section.blk{padding:56px 0}
 
 <script>
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const state={anim:'lively',hero:'a',hl:'cards',price:'calc',art:'toc',faq:'two',sj:'chips',cta:'y',on:{hero:1,hl:1,price:1,art:1,faq:1,sj:1,cta:1}};
+const state={ill:'many',anim:'lively',hero:'a',hl:'cards',price:'calc',art:'toc',faq:'two',sj:'chips',cta:'y',on:{hero:1,hl:1,price:1,art:1,faq:1,sj:1,cta:1}};
 const stage=$('#stage');
 function apply(){
-  document.body.dataset.anim=state.anim;stage.dataset.anim=state.anim;
+  document.body.dataset.anim=state.anim;document.body.dataset.ill=state.ill;stage.dataset.anim=state.anim;
   const h=$('#hero');h.className='hero hero--'+state.hero;
-  $('.hero__art').style.display=state.hero==='a'?'':'none';
-  $('.hero__stats').style.display=state.hero==='b'?'':'none';
+    $('.hero__stats').style.display=state.hero==='b'?'':'none';
+  $('.hero__art').style.display='';
   $('.hero__chips').style.display=state.hero==='c'?'':'none';
   if(state.hero==='c'&&!$('.ring',h))h.insertAdjacentHTML('afterbegin','<div class="ring"></div>');
   if(state.hero!=='c')$$('.ring',h).forEach(e=>e.remove());
@@ -330,13 +352,31 @@ function apply(){
   const c=$('#ctabox');c.className='cta rv in cta--'+state.cta;
   $$('.btn',c).forEach(b=>b.className='btn '+(state.cta==='y'?'btn-d':'btn-p'));
   Object.keys(state.on).forEach(k=>$('[data-sec='+k+']',stage).classList.toggle('hidden',!state.on[k]));
-  $('#out').value=['Анімації: '+{off:'вимкнено',subtle:'спокійні',lively:'жваві'}[state.anim],
+  $('#out').value=['Ілюстрації: '+(state.ill==='many'?'багато':'мінімум'),'Анімації: '+{off:'вимкнено',subtle:'спокійні',lively:'жваві'}[state.anim],
    ...[['hero','1. Шапка'],['hl','2. Переваги'],['price','3. Вартість'],['art','4. Стаття'],['faq','5. Питання'],['sj','6. Предмети'],['cta','7. Заклик']].map(([k,n])=>n+': '+(state.on[k]?state[k]:'не показувати'))].join('\n');
   observe();
 }
 $$('.seg').forEach(seg=>seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[seg.dataset.key]=b.dataset.v;$$('button',seg).forEach(x=>x.setAttribute('aria-pressed',x===b));apply()}));
 $$('.sw').forEach(s=>s.addEventListener('click',()=>{const k=s.dataset.sec;state.on[k]=state.on[k]?0:1;s.setAttribute('aria-pressed',!!state.on[k]);apply()}));
 $('#copy').onclick=()=>{$('#out').select();document.execCommand('copy')};
+const Y='#ffd43b',S='#fff4cc',G='#2b2a2e',W='#fff',M='#e8e4da',O='#f2c626';
+const wrap=(vb,inner,cls='')=>`<svg class="ill ${cls}" viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
+const P={
+docs:`<rect x="38" y="34" width="104" height="132" rx="14" fill="${M}" transform="rotate(-8 90 100)"/><rect x="52" y="28" width="104" height="132" rx="14" fill="${W}" stroke="${G}" stroke-width="4"/><rect x="68" y="50" width="48" height="8" rx="4" fill="${Y}"/><rect x="68" y="72" width="72" height="6" rx="3" fill="${M}"/><rect x="68" y="88" width="72" height="6" rx="3" fill="${M}"/><rect x="68" y="104" width="52" height="6" rx="3" fill="${M}"/><circle cx="142" cy="140" r="26" fill="${Y}" stroke="${G}" stroke-width="4"/><path d="M130 140l9 9 16-18" fill="none" stroke="${G}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,
+cap:`<path d="M100 52L28 88l72 36 72-36z" fill="${G}"/><path d="M60 106v34c0 12 18 22 40 22s40-10 40-22v-34l-40 20z" fill="${Y}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/><path d="M172 88v48" stroke="${G}" stroke-width="4" stroke-linecap="round"/><circle cx="172" cy="142" r="9" fill="${Y}" stroke="${G}" stroke-width="4"/>`,
+laptop:`<rect x="38" y="40" width="124" height="86" rx="12" fill="${W}" stroke="${G}" stroke-width="4"/><path d="M52 108l24-26 20 14 28-34 20 18" fill="none" stroke="${G}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="76" cy="82" r="6" fill="${Y}" stroke="${G}" stroke-width="3"/><circle cx="144" cy="80" r="6" fill="${Y}" stroke="${G}" stroke-width="3"/><path d="M20 140h160l-12 18H32z" fill="${Y}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/>`,
+calc:`<rect x="52" y="24" width="96" height="152" rx="16" fill="${W}" stroke="${G}" stroke-width="4"/><rect x="66" y="40" width="68" height="30" rx="8" fill="${S}" stroke="${G}" stroke-width="3"/><path d="M80 56h40" stroke="${G}" stroke-width="5" stroke-linecap="round"/>${[0,1,2].flatMap(r=>[0,1,2].map(c=>`<rect x="${68+c*24}" y="${86+r*26}" width="18" height="18" rx="6" fill="${r==2&&c==2?Y:M}"/>`)).join('')}`,
+chat:`<path d="M30 40h92a14 14 0 0 1 14 14v46a14 14 0 0 1-14 14H74l-26 20v-20H30a14 14 0 0 1-14-14V54a14 14 0 0 1 14-14z" fill="${Y}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/><path d="M40 64h64M40 82h40" stroke="${G}" stroke-width="5" stroke-linecap="round"/><path d="M110 120h62a14 14 0 0 1 14 14v26a14 14 0 0 1-14 14h-10v16l-20-16h-32a14 14 0 0 1-14-14v-26a14 14 0 0 1 14-14z" fill="${W}" stroke="${G}" stroke-width="4" stroke-linejoin="round" transform="translate(-6 -6)"/>`,
+books:`<rect x="30" y="118" width="140" height="34" rx="8" fill="${Y}" stroke="${G}" stroke-width="4"/><path d="M48 118v34M64 118v34" stroke="${G}" stroke-width="3"/><rect x="44" y="82" width="120" height="34" rx="8" fill="${W}" stroke="${G}" stroke-width="4" transform="rotate(-4 104 99)"/><rect x="54" y="46" width="100" height="34" rx="8" fill="${G}" transform="rotate(3 104 63)"/><path d="M70 58h40" stroke="${Y}" stroke-width="5" stroke-linecap="round" transform="rotate(3 104 63)"/>`,
+shield:`<path d="M100 26l62 22v44c0 40-26 66-62 82-36-16-62-42-62-82V48z" fill="${Y}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/><rect x="76" y="90" width="48" height="38" rx="9" fill="${W}" stroke="${G}" stroke-width="4"/><path d="M84 90V78a16 16 0 0 1 32 0v12" fill="none" stroke="${G}" stroke-width="4"/><circle cx="100" cy="108" r="5" fill="${G}"/>`,
+steps:`<path d="M24 160h44v-30h44v-30h44V70h28" fill="none" stroke="${G}" stroke-width="4" stroke-linejoin="round"/><circle cx="46" cy="160" r="12" fill="${Y}" stroke="${G}" stroke-width="4"/><circle cx="90" cy="130" r="12" fill="${Y}" stroke="${G}" stroke-width="4"/><circle cx="134" cy="100" r="12" fill="${Y}" stroke="${G}" stroke-width="4"/><path d="M164 42l8 18 20 2-15 13 5 20-18-10-18 10 5-20-15-13 20-2z" fill="${Y}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/>`,
+pencil:`<g transform="rotate(35 100 100)"><rect x="84" y="20" width="32" height="120" rx="6" fill="${Y}" stroke="${G}" stroke-width="4"/><path d="M84 140h32l-16 36z" fill="${S}" stroke="${G}" stroke-width="4" stroke-linejoin="round"/><path d="M94 160h12l-6 16z" fill="${G}"/><rect x="84" y="20" width="32" height="22" rx="6" fill="${G}"/></g>`,
+};
+const ill=(n,cls)=>wrap('0 0 200 200',P[n],cls);
+const scene=()=>wrap('0 0 460 360',`<circle cx="230" cy="190" r="150" fill="${S}"/><circle cx="360" cy="70" r="26" fill="${Y}"/><g transform="translate(108 70) scale(1.2)"><g class="bob">${P.laptop}</g></g><g transform="translate(300 170) scale(.8)"><g class="bob2">${P.books}</g></g><g transform="translate(20 190) scale(.7)"><g class="bob3">${P.cap}</g></g><g transform="translate(330 -10) scale(.55)"><g class="bob2">${P.pencil}</g></g><g fill="${G}"><path d="M60 60l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><path d="M410 250l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/></g>`,'scene');
+
+$$('[data-i]').forEach(el=>{el.innerHTML=ill(el.dataset.i)});
+$$('[data-scene]').forEach(el=>{el.innerHTML=scene()});
 /* reveal */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
 function observe(){$$('.rv:not(.in)',stage).forEach(el=>{if(el.offsetParent!==null)io.observe(el)})}
