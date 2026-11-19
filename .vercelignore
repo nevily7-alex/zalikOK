@@ -1,0 +1,11 @@
+.env
+.env.*
+.vercel-env.txt
+.data
+.data-*.log
+node_modules
+.next
+test-results
+playwright-report
+screenshots
+.reference

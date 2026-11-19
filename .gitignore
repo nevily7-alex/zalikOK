@@ -17,3 +17,4 @@ screenshots/tmp
 .env.*.backup
 .vercel-env.txt
 .vercel
+.env*
